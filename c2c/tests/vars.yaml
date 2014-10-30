@@ -1,0 +1,3 @@
+inherit: c2c/tests/inherit.yaml
+vars:
+    var1: first

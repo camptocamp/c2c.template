@@ -1,0 +1,22 @@
+language: python
+python:
+- 2.7
+
+install:
+- virtualenv venv
+- venv/bin/pip install -r dev-requirements.txt
+
+script: 
+- venv/bin/flake8 --version
+- venv/bin/flake8
+- venv/bin/flake8 c2c
+- venv/bin/python setup.py nosetests 
+
+after_success:
+- pip install coveralls
+- coveralls
+
+notifications:
+  email:
+    recipients:
+    - stephane.brunner@camptocamp.com
