@@ -1,0 +1,10 @@
+*.pyc
+*.egg
+*.egg-info
+/c2c/tests/jinja
+/c2c/tests/mako
+/c2c/tests/template
+/.coverage
+/coverage.xml
+/nosetests.xml
+/venv

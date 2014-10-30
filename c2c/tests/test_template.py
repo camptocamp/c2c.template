@@ -39,7 +39,7 @@ class TestTemplate(TestCase):
         sys.argv = ['', '--engine', 'jinja', '--vars', 'c2c/tests/vars.yaml', 'c2c/tests/jinja.jinja']
         main()
 
-        self.AssertEquals(
+        self.assertEquals(
             open('c2c/tests/jinja', 'r').read(),
             'var1: first, var2: second'
         )
@@ -49,17 +49,17 @@ class TestTemplate(TestCase):
         sys.argv = ['', '--engine', 'mako', '--vars', 'c2c/tests/vars.yaml', 'c2c/tests/mako.mako']
         main()
 
-        self.AssertEquals(
+        self.assertEquals(
             open('c2c/tests/mako', 'r').read(),
-            'var1: first, var2: second'
+            'var1: first, var2: second\n'
         )
 
     def test_template(self):
         from c2c.template import main
-        sys.argv = ['', '--engine', 'jinja', '--vars', 'c2c/tests/vars.yaml', 'c2c/tests/tempplate.in']
+        sys.argv = ['', '--engine', 'template', '--vars', 'c2c/tests/vars.yaml', 'c2c/tests/template.in']
         main()
 
-        self.AssertEquals(
+        self.assertEquals(
             open('c2c/tests/template', 'r').read(),
-            'var1: first, var2: second'
+            'var1: first, var2: second\n'
         )

@@ -29,10 +29,11 @@ from setuptools import setup, find_packages
 
 install_requires = [
     'bottle',
-    'Jinja',
+    'Jinja2',
     'Mako',
-    'z3c.recipe.template',
-    'nose'
+    'z3c.recipe.filetemplate',
+    'PyYAML',
+    'nose',
 ]
 
 setup_requires = [

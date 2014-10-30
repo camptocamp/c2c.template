@@ -32,6 +32,7 @@ import os
 
 from yaml import load
 from argparse import ArgumentParser
+from z3c.recipe.filetemplate import Template
 
 
 def main():
@@ -63,11 +64,10 @@ def main():
         bottle_template(options, used_vars, engine)
 
     elif options.engine == 'template':
-        from z3c.recipe.filetemplate import Template
 
         for template in options.files:
             destination = '.'.join(template.split('.')[:-1])
-            processed = Template(
+            processed = C2cTemplate(
                 template,
                 destination,
                 used_vars
@@ -75,23 +75,33 @@ def main():
             file_open = open(destination, 'wt')
             file_open.write(processed)
             file_open.close()
-            os.chmod(destination, os.stat(template))
+            os.chmod(destination, os.stat(template).st_mode)
+
+
+class C2cTemplate(Template):
+    def _get(self, section, option, start):
+        if section is None:
+            return self.recipe[option]
+        else:  # pragma: nocover
+            return self.recipe[section][option]
 
 
 def bottle_template(options, used_vars, engine):
     for template in options.files:
-        processed = template(
+        processed = engine(
             template, **used_vars
         )
         destination = '.'.join(template.split('.')[:-1])
         file_open = open(destination, 'wt')
         file_open.write(processed)
         file_open.close()
-        os.chmod(destination, os.stat(template))
+        os.chmod(destination, os.stat(template).st_mode)
 
 
 def read_vars(vars_file):
-    used = load(vars_file)
+    file_open = open(vars_file, 'r')
+    used = load(file_open.read())
+    file_open.close()
 
     curent_vars = {}
     if 'extends' in used:
