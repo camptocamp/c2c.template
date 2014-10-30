@@ -36,7 +36,9 @@ class TestTemplate(TestCase):
 
     def test_jinja(self):
         from c2c.template import main
-        sys.argv = ['', '--engine', 'jinja', '--vars', 'c2c/tests/vars.yaml', 'c2c/tests/jinja.jinja']
+        sys.argv = [
+            '', '--engine', 'jinja', '--vars', 'c2c/tests/vars.yaml', 'c2c/tests/jinja.jinja'
+        ]
         main()
 
         self.assertEquals(
@@ -56,7 +58,9 @@ class TestTemplate(TestCase):
 
     def test_template(self):
         from c2c.template import main
-        sys.argv = ['', '--engine', 'template', '--vars', 'c2c/tests/vars.yaml', 'c2c/tests/template.in']
+        sys.argv = [
+            '', '--engine', 'template', '--vars', 'c2c/tests/vars.yaml', 'c2c/tests/template.in'
+        ]
         main()
 
         self.assertEquals(
