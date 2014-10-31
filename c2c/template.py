@@ -48,6 +48,10 @@ def main():
         help="the yamle files contains the vars"
     )
     parser.add_argument(
+        '--section', action='store_true',
+        help="use the section (template specific)"
+    )
+    parser.add_argument(
         'files', nargs='*',
         help="the files to interpretate"
     )
@@ -64,22 +68,23 @@ def main():
         bottle_template(options, used_vars, engine)
 
     elif options.engine == 'template':
-
         for template in options.files:
-            processed = C2cTemplate(
+            c2c_template = C2cTemplate(
                 template,
                 template,
                 used_vars
-            ).substitute()
+            )
+            c2c_template.section = options.section
+            processed = c2c_template.substitute()
             save(template, processed)
 
 
 class C2cTemplate(Template):
     def _get(self, section, option, start):
-        if section is None:
+        if self.section and section is not None:
+            return self.recipe[section][option]  # pragma: nocover
+        else:
             return self.recipe[option]
-        else:  # pragma: nocover
-            return self.recipe[section][option]
 
 
 def bottle_template(options, used_vars, engine):
