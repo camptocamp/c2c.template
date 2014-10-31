@@ -48,6 +48,10 @@ def main():
         help="the yamle files contains the vars"
     )
     parser.add_argument(
+        '--section', action='store_true',
+        help="use the section (template specific)"
+    )
+    parser.add_argument(
         'files', nargs='*',
         help="the files to interpretate"
     )
@@ -64,26 +68,23 @@ def main():
         bottle_template(options, used_vars, engine)
 
     elif options.engine == 'template':
-
         for template in options.files:
-            destination = '.'.join(template.split('.')[:-1])
-            processed = C2cTemplate(
+            c2c_template = C2cTemplate(
                 template,
-                destination,
+                template,
                 used_vars
-            ).substitute()
-            file_open = open(destination, 'wt')
-            file_open.write(processed)
-            file_open.close()
-            os.chmod(destination, os.stat(template).st_mode)
+            )
+            c2c_template.section = options.section
+            processed = c2c_template.substitute()
+            save(template, processed)
 
 
 class C2cTemplate(Template):
     def _get(self, section, option, start):
-        if section is None:
+        if self.section and section is not None:
+            return self.recipe[section][option]  # pragma: nocover
+        else:
             return self.recipe[option]
-        else:  # pragma: nocover
-            return self.recipe[section][option]
 
 
 def bottle_template(options, used_vars, engine):
@@ -91,11 +92,15 @@ def bottle_template(options, used_vars, engine):
         processed = engine(
             template, **used_vars
         )
-        destination = '.'.join(template.split('.')[:-1])
-        file_open = open(destination, 'wt')
-        file_open.write(processed)
-        file_open.close()
-        os.chmod(destination, os.stat(template).st_mode)
+        save(template, processed)
+
+
+def save(template, processed):
+    destination = '.'.join(template.split('.')[:-1])
+    file_open = open(destination, 'wt')
+    file_open.write(processed)
+    file_open.close()
+    os.chmod(destination, os.stat(template).st_mode)
 
 
 def read_vars(vars_file):
