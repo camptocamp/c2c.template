@@ -66,16 +66,12 @@ def main():
     elif options.engine == 'template':
 
         for template in options.files:
-            destination = '.'.join(template.split('.')[:-1])
             processed = C2cTemplate(
                 template,
-                destination,
+                template,
                 used_vars
             ).substitute()
-            file_open = open(destination, 'wt')
-            file_open.write(processed)
-            file_open.close()
-            os.chmod(destination, os.stat(template).st_mode)
+            save(template, processed)
 
 
 class C2cTemplate(Template):
@@ -91,11 +87,15 @@ def bottle_template(options, used_vars, engine):
         processed = engine(
             template, **used_vars
         )
-        destination = '.'.join(template.split('.')[:-1])
-        file_open = open(destination, 'wt')
-        file_open.write(processed)
-        file_open.close()
-        os.chmod(destination, os.stat(template).st_mode)
+        save(template, processed)
+
+
+def save(template, processed):
+    destination = '.'.join(template.split('.')[:-1])
+    file_open = open(destination, 'wt')
+    file_open.write(processed)
+    file_open.close()
+    os.chmod(destination, os.stat(template).st_mode)
 
 
 def read_vars(vars_file):
