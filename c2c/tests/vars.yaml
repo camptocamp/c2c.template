@@ -1,3 +1,8 @@
 extends: c2c/tests/inherit.yaml
+
 vars:
     var1: first
+    var_interpreted: 2+2
+
+interpreted-options:
+- var_interpreted

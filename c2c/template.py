@@ -29,6 +29,8 @@
 
 
 import os
+import sys
+import traceback
 
 from yaml import load
 from argparse import ArgumentParser
@@ -112,6 +114,23 @@ def read_vars(vars_file):
     if 'extends' in used:
         curent_vars = read_vars(used['extends'])
 
-    curent_vars.update(used['vars'])
+    new_vars = used['vars']
 
+    if 'interpreted-options' in used:
+        globs = {'__builtins__': __builtins__, 'os': os, 'sys': sys}
+        for key in used['interpreted-options']:
+            try:
+                expression = new_vars[key]
+            except KeyError:  # pragma: nocover
+                print "ERROR: Expression for key not found: %s" % key
+            try:
+                evaluated = eval(expression, globs)
+            except:  # pragma: nocover
+                print "ERROR when evaluating %r expression %r:\n%s" % (
+                    key, expression, traceback.format_exc()
+                )
+
+            new_vars[key] = evaluated
+
+    curent_vars.update(new_vars)
     return curent_vars
