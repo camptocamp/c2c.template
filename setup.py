@@ -42,7 +42,7 @@ setup_requires = [
 
 setup(
     name='c2c.template',
-    version='0.4.0',
+    version='0.5.0',
     description='Template runner',
     long_description='Template runner',
     classifiers=[
