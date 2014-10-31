@@ -43,7 +43,9 @@ class TestTemplate(TestCase):
 
         self.assertEquals(
             open('c2c/tests/jinja', 'r').read(),
-            'var1: first, var2: second, var_interpreted: 4'
+            'var1: first, var2: second\n'
+            'var3: first, second, third\n'
+            'var_interpreted: 4'
         )
 
     def test_mako(self):
@@ -53,7 +55,9 @@ class TestTemplate(TestCase):
 
         self.assertEquals(
             open('c2c/tests/mako', 'r').read(),
-            'var1: first, var2: second, var_interpreted: 4\n'
+            'var1: first, var2: second\n'
+            'var3: first, second, third\n'
+            'var_interpreted: 4\n'
         )
 
     def test_template(self):
@@ -65,5 +69,7 @@ class TestTemplate(TestCase):
 
         self.assertEquals(
             open('c2c/tests/template', 'r').read(),
-            'var1: first, var2: second, var_interpreted: 4\n'
+            'var1: first, var2: second\n'
+            'var3: first, second, third\n'
+            'var_interpreted: 4\n'
         )

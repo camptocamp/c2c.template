@@ -60,6 +60,9 @@ def main():
     options = parser.parse_args()
 
     used_vars = read_vars(options.vars)
+    for key in used_vars.keys():
+        if isinstance(used_vars[key], basestring):
+            used_vars[key] = used_vars[key].format(**used_vars)
 
     if options.engine == 'jinja':
         from bottle import jinja2_template as engine
