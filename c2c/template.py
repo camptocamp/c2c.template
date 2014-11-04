@@ -47,7 +47,7 @@ def main():
     )
     parser.add_argument(
         '--vars', '-c', default='vars.yaml',
-        help="the yamle files contains the vars"
+        help="the YAML file defining the variables"
     )
     parser.add_argument(
         '--section', action='store_true',
@@ -55,7 +55,7 @@ def main():
     )
     parser.add_argument(
         'files', nargs='*',
-        help="the files to interpretate"
+        help="the files to interprate"
     )
     options = parser.parse_args()
 
