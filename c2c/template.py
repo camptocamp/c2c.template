@@ -119,9 +119,9 @@ def read_vars(vars_file):
 
     new_vars = used['vars']
 
-    if 'interpreted-options' in used:
+    if 'interpreted-vars' in used:
         globs = {'__builtins__': __builtins__, 'os': os, 'sys': sys}
-        for key in used['interpreted-options']:
+        for key in used['interpreted-vars']:
             try:
                 expression = new_vars[key]
             except KeyError:  # pragma: nocover

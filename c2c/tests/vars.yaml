@@ -4,5 +4,5 @@ vars:
     var1: first
     var_interpreted: 2+2
 
-interpreted-options:
+interpreted-vars:
 - var_interpreted
