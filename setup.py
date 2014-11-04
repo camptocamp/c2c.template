@@ -47,6 +47,12 @@ setup(
     long_description='Template runner',
     classifiers=[
         "Programming Language :: Python",
+        "Environment :: Console",
+        "Framework :: Bottle",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: BSD License",
+        "Operating System :: OS Independent",
+        "Topic :: Utilities",
     ],
     author='camptocamp',
     author_email='info@camptocamp.com',
