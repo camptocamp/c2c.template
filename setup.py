@@ -25,7 +25,15 @@
 # of the authors and should not be interpreted as representing official policies,
 # either expressed or implied, of the FreeBSD Project.
 
+
+import os
+
 from setuptools import setup, find_packages
+
+
+HERE = os.path.abspath(os.path.dirname(__file__))
+README = open(os.path.join(HERE, 'README.rst')).read()
+
 
 install_requires = [
     'bottle',
@@ -43,8 +51,8 @@ setup_requires = [
 setup(
     name='c2c.template',
     version='0.5.0',
-    description='Template runner',
-    long_description='Template runner',
+    description='Vars collector and template runner.',
+    long_description=README,
     classifiers=[
         "Programming Language :: Python",
         "Environment :: Console",
