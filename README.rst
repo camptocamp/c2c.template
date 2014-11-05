@@ -7,7 +7,7 @@ Tools that collect some vars and get them to a template engine.
 
 Supported template: `Jinja <http://jinja.pocoo.org/>`_,
 `Mako <http://www.makotemplates.org/>`_ and
-`Template https://pypi.python.org/pypi/z3c.recipe.filetemplate`_.
+`Template <https://pypi.python.org/pypi/z3c.recipe.filetemplate>`_.
 
 Use ``c2c-template --help`` to get the command line help.
 
