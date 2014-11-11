@@ -136,7 +136,7 @@ def read_vars(vars_file):
             try:
                 expression = new_vars[key]
             except KeyError:  # pragma: nocover
-                print "ERROR: Expression for key not found: %s" % key
+                print("ERROR: Expression for key not found: %s" % key)
                 exit(1)
 
             interpreter = 'python'
@@ -150,9 +150,9 @@ def read_vars(vars_file):
                 try:
                     evaluated = eval(expression, globs)
                 except:  # pragma: nocover
-                    print "ERROR when evaluating %r expression %r:\n%s" % (
+                    print("ERROR when evaluating %r expression %r:\n%s" % (
                         key, expression, traceback.format_exc()
-                    )
+                    ))
                     exit(1)
             elif interpreter == 'bash':
                 evaluated = check_output(expression, shell=True)
