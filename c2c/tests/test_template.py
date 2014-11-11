@@ -45,7 +45,9 @@ class TestTemplate(TestCase):
             open('c2c/tests/jinja', 'r').read(),
             'var1: first, var2: second\n'
             'var3: first, second, third\n'
-            'var_interpreted: 4'
+            'var_interpreted: 4\n'
+            'JSON kernel: Linux\n'
+            'YAML kernel: Linux'
         )
 
     def test_mako(self):

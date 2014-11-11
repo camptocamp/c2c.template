@@ -32,9 +32,20 @@ import os
 import sys
 import traceback
 
+import json
 from yaml import load
 from argparse import ArgumentParser
 from z3c.recipe.filetemplate import Template
+try:
+    from subprocess import check_output
+except ImportError:  # pragma: nocover
+    from subprocess import Popen, PIPE
+
+    def check_output(cmd, cwd=None, stdin=None, stderr=None, shell=False):  # noqa
+        """Backwards compatible check_output"""
+        p = Popen(cmd, cwd=cwd, stdin=stdin, stderr=stderr, shell=shell, stdout=PIPE)
+        out, err = p.communicate()
+        return out
 
 
 def main():
@@ -126,12 +137,43 @@ def read_vars(vars_file):
                 expression = new_vars[key]
             except KeyError:  # pragma: nocover
                 print "ERROR: Expression for key not found: %s" % key
-            try:
-                evaluated = eval(expression, globs)
-            except:  # pragma: nocover
-                print "ERROR when evaluating %r expression %r:\n%s" % (
-                    key, expression, traceback.format_exc()
-                )
+                exit(1)
+
+            interpreter = 'python'
+            reader = None
+            if isinstance(expression, dict):
+                interpreter = expression.get('interpreter', 'python')
+                reader = expression.get('reader', None)
+                expression = expression.get('expression', None)
+
+            if interpreter == 'python':
+                try:
+                    evaluated = eval(expression, globs)
+                except:  # pragma: nocover
+                    print "ERROR when evaluating %r expression %r:\n%s" % (
+                        key, expression, traceback.format_exc()
+                    )
+                    exit(1)
+            elif interpreter == 'bash':
+                evaluated = check_output(expression, shell=True)
+            elif interpreter == 'environment':  # pragma: nocover
+                if expression is None:
+                    evaluated = os.environ
+                else:
+                    evaluated = os.environ[expression]
+            else:  # pragma: nocover
+                print("Unknown interpreter '{}'.".format(interpreter))
+                exit(1)
+
+            if reader is None:
+                pass
+            elif reader == 'json':
+                evaluated = json.loads(evaluated)
+            elif reader == 'yaml':
+                evaluated = load(evaluated)
+            else:  # pragma: nocover
+                print("Unknown reader '{}'.".format(reader))
+                exit(1)
 
             new_vars[key] = evaluated
 

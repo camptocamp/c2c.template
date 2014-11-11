@@ -3,6 +3,7 @@ python:
 - 2.7
 
 install:
+- sudo apt-get install facter ruby-json
 - virtualenv venv
 - venv/bin/pip install -r dev-requirements.txt
 

@@ -3,6 +3,16 @@ extends: c2c/tests/inherit.yaml
 vars:
     var1: first
     var_interpreted: 2+2
+    facter_json:
+        expression: /usr/bin/facter --json
+        reader: json
+        interpreter: bash
+    facter_yaml:
+        expression: /usr/bin/facter --yaml
+        reader: yaml
+        interpreter: bash
 
 interpreted-vars:
 - var_interpreted
+- facter_json
+- facter_yaml
