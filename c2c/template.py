@@ -33,9 +33,11 @@ import sys
 import traceback
 
 import json
-from yaml import load
+import yaml
+from yaml.parser import ParserError
 from argparse import ArgumentParser
 from z3c.recipe.filetemplate import Template
+from subprocess import CalledProcessError
 try:
     from subprocess import check_output
 except ImportError:  # pragma: nocover
@@ -121,7 +123,7 @@ def save(template, processed):
 
 def read_vars(vars_file):
     file_open = open(vars_file, 'r')
-    used = load(file_open.read())
+    used = yaml.load(file_open.read())
     file_open.close()
 
     curent_vars = {}
@@ -130,52 +132,105 @@ def read_vars(vars_file):
 
     new_vars = used['vars']
 
-    if 'interpreted-vars' in used:
+    if 'interpreted' in used:
+        interpreters = []
         globs = {'__builtins__': __builtins__, 'os': os, 'sys': sys}
-        for key in used['interpreted-vars']:
-            try:
-                expression = new_vars[key]
-            except KeyError:  # pragma: nocover
-                print("ERROR: Expression for key not found: %s" % key)
-                exit(1)
+        for key, interpreter in used['interpreted'].items():
+            if isinstance(interpreter, dict):
+                interpreter["name"] = key
+                if 'priority' not in interpreter:
+                    interpreter["priority"] = 0 if key in ['json', 'yaml'] else 100
+            else:
+                interpreter = {
+                    "name": key,
+                    "vars": interpreter,
+                    "priority": 0 if key in ['json', 'yaml'] else 100
+                }
+            interpreters.append(interpreter)
 
-            interpreter = 'python'
-            reader = None
-            if isinstance(expression, dict):
-                interpreter = expression.get('interpreter', 'python')
-                reader = expression.get('reader', None)
-                expression = expression.get('expression', None)
+        interpreters.sort(key=lambda v: -v["priority"])
 
-            if interpreter == 'python':
+        for interpreter in interpreters:
+            for var_name in interpreter["vars"]:
                 try:
-                    evaluated = eval(expression, globs)
-                except:  # pragma: nocover
-                    print("ERROR when evaluating %r expression %r:\n%s" % (
-                        key, expression, traceback.format_exc()
-                    ))
+                    expression = new_vars[var_name]
+                except KeyError:  # pragma: nocover
+                    print("ERROR: Expression for key not found: %s" % key)
                     exit(1)
-            elif interpreter == 'bash':
-                evaluated = check_output(expression, shell=True)
-            elif interpreter == 'environment':  # pragma: nocover
-                if expression is None:
-                    evaluated = os.environ
-                else:
-                    evaluated = os.environ[expression]
-            else:  # pragma: nocover
-                print("Unknown interpreter '{}'.".format(interpreter))
-                exit(1)
 
-            if reader is None:
-                pass
-            elif reader == 'json':
-                evaluated = json.loads(evaluated)
-            elif reader == 'yaml':
-                evaluated = load(evaluated)
-            else:  # pragma: nocover
-                print("Unknown reader '{}'.".format(reader))
-                exit(1)
+                if "cmd" in interpreter:
+                    cmd = interpreter["cmd"][:]  # [:] to clone
+                    cmd.append(expression)
+                    try:
+                        evaluated = check_output(cmd)
+                    except OSError as e:  # pragma: nocover
+                        print("ERROR when running the expression '%r': %s" % (
+                            expression, e
+                        ))
+                        exit(1)
+                    except CalledProcessError as e:  # pragma: nocover
+                        print("ERROR when running the expression '%r': %s" % (
+                            expression, e
+                        ))
+                        exit(1)
 
-            new_vars[key] = evaluated
+                elif interpreter["name"] == "python":
+                    try:
+                        evaluated = eval(expression, globs)
+                    except:  # pragma: nocover
+                        print("ERROR when evaluating %r expression %r as Python:\n%s" % (
+                            key, expression, traceback.format_exc()
+                        ))
+                        exit(1)
+                elif interpreter["name"] == 'bash':
+                    try:
+                        evaluated = check_output(expression, shell=True)
+                    except OSError as e:  # pragma: nocover
+                        print("ERROR when running the expression '%r': %s" % (
+                            expression, e
+                        ))
+                        exit(1)
+                    except CalledProcessError as e:  # pragma: nocover
+                        print("ERROR when running the expression '%r': %s" % (
+                            expression, e
+                        ))
+                        exit(1)
+
+                elif interpreter["name"] == 'environment':  # pragma: nocover
+                    if expression is None:
+                        evaluated = os.environ
+                    else:
+                        try:
+                            evaluated = os.environ[expression]
+                        except KeyError:
+                            print(
+                                "ERROR when getting %r in environment variables, "
+                                "possible values are: %r" % (
+                                    expression, os.environ.keys()
+                                )
+                            )
+                            exit(1)
+                elif interpreter["name"] == 'json':
+                    try:
+                        evaluated = json.loads(expression)
+                    except ValueError as e:  # pragma: nocover
+                        print("ERROR when evaluating %r expression %r as JSON: %s" % (
+                            key, expression, e
+                        ))
+                        exit(1)
+                elif interpreter["name"] == 'yaml':
+                    try:
+                        evaluated = yaml.load(expression)
+                    except ParserError as e:  # pragma: nocover
+                        print("ERROR when evaluating %r expression %r as YAML: %s" % (
+                            key, expression, e
+                        ))
+                        exit(1)
+                else:  # pragma: nocover
+                    print("Unknown interpreter name '{}'.".format(interpreter["name"]))
+                    exit(1)
+
+                new_vars[var_name] = evaluated
 
     curent_vars.update(new_vars)
     return curent_vars

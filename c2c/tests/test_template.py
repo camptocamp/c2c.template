@@ -47,7 +47,8 @@ class TestTemplate(TestCase):
             'var3: first, second, third\n'
             'var_interpreted: 4\n'
             'JSON kernel: Linux\n'
-            'YAML kernel: Linux'
+            'YAML kernel: Linux\n'
+            'pi: 3.14\n'
         )
 
     def test_mako(self):
