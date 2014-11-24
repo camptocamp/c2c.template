@@ -3,6 +3,20 @@ extends: c2c/tests/inherit.yaml
 vars:
     var1: first
     var_interpreted: 2+2
+    facter_json: /usr/bin/facter --json
+    facter_yaml: /usr/bin/facter --yaml
+    pi: console.log(Math.PI.toPrecision(3))
 
-interpreted-vars:
-- var_interpreted
+interpreted:
+    python:
+    - var_interpreted
+    bash:
+    - facter_json
+    - facter_yaml
+    json:
+    - facter_json
+    yaml:
+    - facter_yaml
+    node:
+        vars: ["pi"]
+        cmd: ["node", "-e"]
