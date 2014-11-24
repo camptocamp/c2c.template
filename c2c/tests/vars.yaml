@@ -6,6 +6,10 @@ vars:
     facter_json: /usr/bin/facter --json
     facter_yaml: /usr/bin/facter --yaml
     pi: console.log(Math.PI.toPrecision(3))
+    obj:
+        v1: 1
+        v2: '2'
+        v3: [1, 2, 3]
 
 interpreted:
     python:

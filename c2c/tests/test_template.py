@@ -29,7 +29,9 @@
 
 
 import sys
+import yaml
 from unittest import TestCase
+from StringIO import StringIO
 
 
 class TestTemplate(TestCase):
@@ -37,7 +39,8 @@ class TestTemplate(TestCase):
     def test_jinja(self):
         from c2c.template import main
         sys.argv = [
-            '', '--engine', 'jinja', '--vars', 'c2c/tests/vars.yaml', 'c2c/tests/jinja.jinja'
+            '', '--engine', 'jinja', '--vars', 'c2c/tests/vars.yaml',
+            '--files', 'c2c/tests/jinja.jinja'
         ]
         main()
 
@@ -53,7 +56,10 @@ class TestTemplate(TestCase):
 
     def test_mako(self):
         from c2c.template import main
-        sys.argv = ['', '--engine', 'mako', '--vars', 'c2c/tests/vars.yaml', 'c2c/tests/mako.mako']
+        sys.argv = [
+            '', '--engine', 'mako', '--vars', 'c2c/tests/vars.yaml',
+            '--files', 'c2c/tests/mako.mako'
+        ]
         main()
 
         self.assertEquals(
@@ -66,7 +72,8 @@ class TestTemplate(TestCase):
     def test_template(self):
         from c2c.template import main
         sys.argv = [
-            '', '--engine', 'template', '--vars', 'c2c/tests/vars.yaml', 'c2c/tests/template.in'
+            '', '--engine', 'template', '--vars', 'c2c/tests/vars.yaml',
+            '--files', 'c2c/tests/template.in'
         ]
         main()
 
@@ -76,3 +83,39 @@ class TestTemplate(TestCase):
             'var3: first, second, third\n'
             'var_interpreted: 4\n'
         )
+
+    def test_get_var(self):
+        from c2c.template import main
+        sys.argv = [
+            '', '--vars', 'c2c/tests/vars.yaml', '--get-var', 'var_interpreted', 'VAR_1=var1'
+        ]
+        sys.stdout = StringIO()
+        main()
+        self.assertEquals(
+            sys.stdout.getvalue(),
+            "VAR_INTERPRETED=4\n"
+            "VAR_1='first'\n"
+        )
+        sys.stdout = sys.__stdout__
+
+    def test_get_config(self):
+        from c2c.template import main
+        sys.argv = [
+            '', '--vars', 'c2c/tests/vars.yaml',
+            '--get-config', 'config.yaml', 'var_interpreted', 'var1', 'obj'
+        ]
+        main()
+
+        with open('config.yaml') as config:
+            self.assertEquals(
+                yaml.load(config.read()),
+                {
+                    'var_interpreted': 4,
+                    'var1': 'first',
+                    'obj': {
+                        'v1': 1,
+                        'v2': '2',
+                        'v3': [1, 2, 3]
+                    }
+                }
+            )
