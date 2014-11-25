@@ -67,8 +67,16 @@ def main():
         help="use the section (template specific)"
     )
     parser.add_argument(
-        'files', nargs='*',
-        help="the files to interprate"
+        '--files', nargs='*',
+        help="the files to interpret"
+    )
+    parser.add_argument(
+        '--get-vars', nargs='*', default=[],
+        help="the vars to get, can be MY_VAR=my_var"
+    )
+    parser.add_argument(
+        '--get-config', nargs='*',
+        help="generate a configuration file"
     )
     options = parser.parse_args()
 
@@ -77,24 +85,46 @@ def main():
         if isinstance(used_vars[key], basestring):
             used_vars[key] = used_vars[key].format(**used_vars)
 
-    if options.engine == 'jinja':
-        from bottle import jinja2_template as engine
-        bottle_template(options, used_vars, engine)
+    for get_var in options.get_vars:
+        corresp = get_var.split('=')
+        if len(corresp) == 1:
+            corresp = (get_var.upper(), get_var)
 
-    elif options.engine == 'mako':
-        from bottle import mako_template as engine
-        bottle_template(options, used_vars, engine)
+        if len(corresp) != 2:  # pragma: nocover
+            print("ERROR the get variable '%s' has more than one '='." % (
+                get_var
+            ))
+            exit(1)
 
-    elif options.engine == 'template':
-        for template in options.files:
-            c2c_template = C2cTemplate(
-                template,
-                template,
-                used_vars
-            )
-            c2c_template.section = options.section
-            processed = c2c_template.substitute()
-            save(template, processed)
+        print("%s=%r" % (corresp[0], used_vars[corresp[1]]))
+
+    if options.get_config is not None:
+        new_vars = {}
+        for v in options.get_config[1:]:
+            new_vars[v] = used_vars[v]
+
+        with open(options.get_config[0], 'wt') as file_open:
+            file_open.write(yaml.dump(new_vars))
+
+    if options.files is not None:
+        if options.engine == 'jinja':
+            from bottle import jinja2_template as engine
+            bottle_template(options, used_vars, engine)
+
+        elif options.engine == 'mako':
+            from bottle import mako_template as engine
+            bottle_template(options, used_vars, engine)
+
+        elif options.engine == 'template':
+            for template in options.files:
+                c2c_template = C2cTemplate(
+                    template,
+                    template,
+                    used_vars
+                )
+                c2c_template.section = options.section
+                processed = c2c_template.substitute()
+                save(template, processed)
 
 
 class C2cTemplate(Template):
@@ -115,16 +145,14 @@ def bottle_template(options, used_vars, engine):
 
 def save(template, processed):
     destination = '.'.join(template.split('.')[:-1])
-    file_open = open(destination, 'wt')
-    file_open.write(processed)
-    file_open.close()
+    with open(destination, 'wt') as file_open:
+        file_open.write(processed)
     os.chmod(destination, os.stat(template).st_mode)
 
 
 def read_vars(vars_file):
-    file_open = open(vars_file, 'r')
-    used = yaml.load(file_open.read())
-    file_open.close()
+    with open(vars_file, 'r') as file_open:
+        used = yaml.load(file_open.read())
 
     curent_vars = {}
     if 'extends' in used:
