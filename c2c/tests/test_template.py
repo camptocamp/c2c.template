@@ -119,3 +119,23 @@ class TestTemplate(TestCase):
                     }
                 }
             )
+
+    def test_builder(self):
+        from c2c.template import main
+        sys.argv = [
+            '', '--vars', 'c2c/tests/builder_vars.yaml',
+            '--files-builder', 'c2c/tests/builder.jinja', '{name}.txt', 'iter'
+        ]
+        main()
+
+        with open('aa.txt') as test:
+            self.assertEquals(
+                test.read(),
+                "var1: first\nvar2: secound"
+            )
+
+        with open('bb.txt') as test:
+            self.assertEquals(
+                test.read(),
+                "var1: first\nvar2: 2"
+            )
