@@ -238,7 +238,7 @@ def read_vars(vars_file):
                         evaluated = eval(expression, globs)
                     except:  # pragma: nocover
                         print("ERROR when evaluating %r expression %r as Python:\n%s" % (
-                            key, expression, traceback.format_exc()
+                            var_name, expression, traceback.format_exc()
                         ))
                         exit(1)
                 elif interpreter["name"] == 'bash':
