@@ -78,6 +78,14 @@ def main():
         '--get-config', nargs='*',
         help="generate a configuration file"
     )
+    files_builder_help = \
+        "generate some files from a source file (first ARG), " \
+        "to files (secound ARG, with format we can access to the value attribute), " \
+        "and get the value on iter on the variable referenced by the third argument"
+    parser.add_argument(
+        '--files-builder', nargs=3,
+        metavar='ARG', help=files_builder_help
+    )
     options = parser.parse_args()
 
     used_vars = read_vars(options.vars)
@@ -106,25 +114,49 @@ def main():
         with open(options.get_config[0], 'wt') as file_open:
             file_open.write(yaml.dump(new_vars))
 
+    if options.files_builder is not None:
+        var_path = options.files_builder[2].split('.')
+        values = used_vars
+        for key in var_path:
+            values = values[key]
+
+        if not isinstance(values, list):  # pragma: nocover
+            print("ERROR the variable '%s': '%r' should be an array." % (
+                options.files_builder[2], values
+            ))
+
+        for value in values:
+            file_vars = {}
+            file_vars.update(used_vars)
+            file_vars.update(value)
+            template = options.files_builder[0]
+            destination = options.files_builder[1].format(**value)
+            _proceed([[template, destination]], file_vars, options)
+
     if options.files is not None:
-        if options.engine == 'jinja':
-            from bottle import jinja2_template as engine
-            bottle_template(options, used_vars, engine)
+        files = [(f, '.'.join(f.split('.')[:-1])) for f in options.files]
+        _proceed(files, used_vars, options)
 
-        elif options.engine == 'mako':
-            from bottle import mako_template as engine
-            bottle_template(options, used_vars, engine)
 
-        elif options.engine == 'template':
-            for template in options.files:
-                c2c_template = C2cTemplate(
-                    template,
-                    template,
-                    used_vars
-                )
-                c2c_template.section = options.section
-                processed = c2c_template.substitute()
-                save(template, processed)
+def _proceed(files, used_vars, options):
+    if options.engine == 'jinja':
+        from bottle import jinja2_template as engine
+        bottle_template(files, used_vars, engine)
+
+    elif options.engine == 'mako':
+        from bottle import mako_template as engine
+        bottle_template(files, used_vars, engine)
+
+    elif options.engine == 'template':
+        for template, destination in files:
+            c2c_template = C2cTemplate(
+                template,
+                template,
+                used_vars
+            )
+            c2c_template.section = options.section
+            processed = c2c_template.substitute()
+            save(template, destination, processed)
 
 
 class C2cTemplate(Template):
@@ -135,16 +167,15 @@ class C2cTemplate(Template):
             return self.recipe[option]
 
 
-def bottle_template(options, used_vars, engine):
-    for template in options.files:
+def bottle_template(files, used_vars, engine):
+    for template, destination in files:
         processed = engine(
             template, **used_vars
         )
-        save(template, processed)
+        save(template, destination, processed)
 
 
-def save(template, processed):
-    destination = '.'.join(template.split('.')[:-1])
+def save(template, destination, processed):
     with open(destination, 'wt') as file_open:
         file_open.write(processed)
     os.chmod(destination, os.stat(template).st_mode)
