@@ -50,7 +50,7 @@ setup_requires = [
 
 setup(
     name='c2c.template',
-    version='1.0.0',
+    version='1.1.0',
     description='Vars collector and template runner.',
     long_description=README,
     classifiers=[
