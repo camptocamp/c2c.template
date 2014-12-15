@@ -72,7 +72,7 @@ def main():
     )
     parser.add_argument(
         '--get-vars', nargs='*', default=[],
-        help="the vars to get, can be MY_VAR=my_var"
+        help="the vars to get, can be MY_VAR=my-var"
     )
     parser.add_argument(
         '--get-config', nargs='*',
@@ -80,7 +80,7 @@ def main():
     )
     files_builder_help = \
         "generate some files from a source file (first ARG), " \
-        "to files (secound ARG, with format we can access to the value attribute), " \
+        "to files (second ARG, with format we can access to the value attribute), " \
         "and get the value on iter on the variable referenced by the third argument"
     parser.add_argument(
         '--files-builder', nargs=3,

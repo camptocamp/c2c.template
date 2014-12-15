@@ -2,6 +2,6 @@ vars:
     var1: first
     iter: 
     - name: aa
-      var2: secound
+      var2: second
     - name: bb
       var2: "2"
