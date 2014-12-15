@@ -72,7 +72,7 @@ def main():
     )
     parser.add_argument(
         '--get-vars', nargs='*', default=[],
-        help="the vars to get, can be MY_VAR=my-var"
+        help="the vars to get, can be MY_VAR=my_var"
     )
     parser.add_argument(
         '--get-config', nargs='*',
