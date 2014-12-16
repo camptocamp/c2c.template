@@ -131,7 +131,7 @@ class TestTemplate(TestCase):
         with open('aa.txt') as test:
             self.assertEquals(
                 test.read(),
-                "var1: first\nvar2: secound"
+                "var1: first\nvar2: second"
             )
 
         with open('bb.txt') as test:

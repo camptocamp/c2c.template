@@ -25,9 +25,27 @@ The vars collector gets the vars from YAML files like this one:
         int_var: 42
         interpreted_var: __import__('datetime').date.today()
         combined_var: 'Today: {interpreted_var:%Y-%m-%d}'
+        facter_json: /usr/bin/facter --json
+        facter_yaml: /usr/bin/facter --yaml
+        pi: console.log(Math.PI.toPrecision(3))
+        obj:
+            v1: 1
+            v2: '2'
+            v3: [1, 2, 3]
 
-    interpreted-vars:
-    - interpreted_var
+    interpreted:
+        python:
+        - interpreted_var
+        bash:
+        - facter_json
+        - facter_yaml
+        json:
+        - facter_json
+        yaml:
+        - facter_yaml
+        node:
+            vars: ["pi"]
+            cmd: ["node", "-e"]
 
 The ``inherit.yaml`` is an other file with the same syntax that will provide
 initial vars.
@@ -35,9 +53,92 @@ initial vars.
 The ``vars`` section is where we define the vars values, the YAML files
 support typing, than ``42`` will be an integer.
 
-The ``interpreted-vars`` is a list of variable that the value will be
-interpreted, than the ``interpreted_var`` will have the value ``4``,
-See: `eval() <https://docs.python.org/2/library/functions.html#eval>`_.
+The ``interpreted`` configuration to interpret some vars,
+``python``, ``bash``, ``environ``, ``json``, ``yaml`` are predefined
+interpreter, ``node`` is a custom interpreter.
 
 The ``combined_var`` reuse a predefined variable and format,
 See: `str.format() <https://docs.python.org/2/library/string.html#formatstrings>`_.
+
+
+Example of usage
+================
+
+
+Interpret variable in a template
+--------------------------------
+
+.. code:: bash
+
+    c2c-template --vars vars.yaml --engine jinja --files template.jinja
+
+The result will be stored in a file named ``template``.
+
+
+Get the vars
+------------
+
+It can be useful to get the variable outside.
+
+.. code:: bash
+
+    `c2c-template --vars vars.yaml --get-vars INT_VAR=int_var string_var`
+
+That will set the bash variable ``INT_VAR`` to 42, and ``STRING_VAR`` to 'a string'.
+
+
+Get a configuration file
+------------------------
+
+.. code:: bash
+
+    c2c-template --vars vars.yaml --get-config config.yaml string-var int-var combined-var
+
+Will create a file named ``config.yaml`` this:
+
+.. code:: yaml
+
+   string-var: a string
+   int-var: 42
+   combined-var: Today: 2014-12-12
+
+
+Build a set of file based on a template
+---------------------------------------
+
+Create the following vars file (``vars.yaml``):
+
+.. code:: yaml
+
+    vars:
+        var1: common
+        iter:
+        - name: one
+          var2: first
+        - name: two
+          var2: second
+
+And the following template (``template.jinja``):
+
+.. code::
+
+   var1: {{ var1 }}
+   var2: {{ var2 }}
+
+And run the following command:
+
+.. code:: bash
+
+    c2c-template --vars vars.yaml --files-builder template.jinja {name}.txt iter
+
+This will create two files:
+
+the ``one.txt`` file, with::
+
+    var1: common
+    var2: first
+
+The ``two.txt`` file, with::
+
+    var1: common
+    var2: second
