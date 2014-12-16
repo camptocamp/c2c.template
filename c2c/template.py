@@ -109,7 +109,7 @@ def main():
     if options.get_config is not None:
         new_vars = {}
         for v in options.get_config[1:]:
-            new_vars[v] = used_vars[v]
+            new_vars[v] = used_vars.get(v)
 
         with open(options.get_config[0], 'wt') as file_open:
             file_open.write(yaml.dump(new_vars))
