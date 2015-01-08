@@ -10,6 +10,7 @@ install:
 - sudo apt-get update
 - sudo apt-get install facter ruby-json
 - virtualenv venv
+- venv/bin/pip install -r requirements.txt
 - venv/bin/pip install -r dev-requirements.txt
 
 script: 

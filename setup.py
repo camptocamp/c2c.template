@@ -41,11 +41,6 @@ install_requires = [
     'Mako',
     'z3c.recipe.filetemplate',
     'PyYAML',
-    'nose',
-]
-
-setup_requires = [
-    'nosexcover==1.0.8',
 ]
 
 setup(
@@ -75,7 +70,6 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=install_requires,
-    setup_requires=setup_requires,
     test_suite="c2c.template",
     entry_points={
         'console_scripts': [
