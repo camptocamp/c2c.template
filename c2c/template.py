@@ -88,9 +88,14 @@ def main():
     options = parser.parse_args()
 
     used_vars = read_vars(options.vars)
-    for key in used_vars.keys():
-        if isinstance(used_vars[key], basestring):
-            used_vars[key] = used_vars[key].format(**used_vars)
+
+    def format_walker(curent_vars):
+        for key in curent_vars.keys():
+            if isinstance(curent_vars[key], basestring):
+                curent_vars[key] = curent_vars[key].format(**used_vars)
+            elif isinstance(curent_vars[key], dict):
+                format_walker(curent_vars[key])
+    format_walker(used_vars)
 
     for get_var in options.get_vars:
         corresp = get_var.split('=')
