@@ -31,7 +31,6 @@
 import os
 import sys
 import traceback
-
 import json
 import yaml
 from yaml.parser import ParserError
@@ -155,7 +154,7 @@ def _proceed(files, used_vars, options):
                 used_vars
             )
             c2c_template.section = options.section
-            processed = c2c_template.substitute()
+            processed = unicode(c2c_template.substitute(), "utf8")
             save(template, destination, processed)
 
 
@@ -177,7 +176,7 @@ def bottle_template(files, used_vars, engine):
 
 def save(template, destination, processed):
     with open(destination, 'wt') as file_open:
-        file_open.write(processed)
+        file_open.write(processed.encode("utf-8"))
     os.chmod(destination, os.stat(template).st_mode)
 
 
