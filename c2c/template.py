@@ -31,7 +31,6 @@
 import os
 import sys
 import traceback
-
 import json
 import yaml
 from yaml.parser import ParserError
@@ -89,9 +88,14 @@ def main():
     options = parser.parse_args()
 
     used_vars = read_vars(options.vars)
-    for key in used_vars.keys():
-        if isinstance(used_vars[key], basestring):
-            used_vars[key] = used_vars[key].format(**used_vars)
+
+    def format_walker(curent_vars):
+        for key in curent_vars.keys():
+            if isinstance(curent_vars[key], basestring):
+                curent_vars[key] = curent_vars[key].format(**used_vars)
+            elif isinstance(curent_vars[key], dict):
+                format_walker(curent_vars[key])
+    format_walker(used_vars)
 
     for get_var in options.get_vars:
         corresp = get_var.split('=')
@@ -109,7 +113,11 @@ def main():
     if options.get_config is not None:
         new_vars = {}
         for v in options.get_config[1:]:
-            new_vars[v] = used_vars.get(v)
+            var_path = v.split('.')
+            value = used_vars
+            for key in var_path:
+                value = value[key]
+            new_vars[v] = value
 
         with open(options.get_config[0], 'wt') as file_open:
             file_open.write(yaml.dump(new_vars))
@@ -155,7 +163,7 @@ def _proceed(files, used_vars, options):
                 used_vars
             )
             c2c_template.section = options.section
-            processed = c2c_template.substitute()
+            processed = unicode(c2c_template.substitute(), "utf8")
             save(template, destination, processed)
 
 
@@ -177,7 +185,7 @@ def bottle_template(files, used_vars, engine):
 
 def save(template, destination, processed):
     with open(destination, 'wt') as file_open:
-        file_open.write(processed)
+        file_open.write(processed.encode("utf-8"))
     os.chmod(destination, os.stat(template).st_mode)
 
 
