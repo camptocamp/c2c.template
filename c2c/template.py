@@ -90,12 +90,16 @@ def main():
     used_vars = read_vars(options.vars)
 
     def format_walker(curent_vars):
-        for key in curent_vars.keys():
-            if isinstance(curent_vars[key], basestring):
-                curent_vars[key] = curent_vars[key].format(**used_vars)
-            elif isinstance(curent_vars[key], dict):
-                format_walker(curent_vars[key])
-    format_walker(used_vars)
+        if isinstance(curent_vars, basestring):
+            return curent_vars.format(**used_vars)
+        elif isinstance(curent_vars, list):
+            return [format_walker(var) for var in curent_vars]
+        elif isinstance(curent_vars, dict):
+            for key in curent_vars.keys():
+                curent_vars[key] = format_walker(curent_vars[key])
+            return curent_vars
+        return curent_vars
+    used_vars = format_walker(used_vars)
 
     for get_var in options.get_vars:
         corresp = get_var.split('=')
