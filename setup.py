@@ -48,6 +48,7 @@ setup(
     version='1.0.1',
     description='Vars collector and template runner.',
     long_description=README,
+    namespace_packages=['c2c'],
     classifiers=[
         "Programming Language :: Python",
         "Environment :: Console",
