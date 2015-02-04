@@ -222,7 +222,7 @@ def read_vars(vars_file):
                 try:
                     expression = new_vars[var_name]
                 except KeyError:  # pragma: nocover
-                    print("ERROR: Expression for key not found: %s" % key)
+                    print("ERROR: Expression for key not found: %s" % var_name)
                     exit(1)
 
                 if "cmd" in interpreter:
