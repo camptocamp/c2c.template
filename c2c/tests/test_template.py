@@ -120,6 +120,27 @@ class TestTemplate(TestCase):
                 }
             )
 
+    def test_path(self):
+        from c2c.template import main
+        sys.argv = [
+            "", "--vars", "c2c/tests/path.yaml",
+            "--get-config", "config.yaml", "path"
+        ]
+        main()
+
+        with open("config.yaml") as config:
+            self.assertEquals(
+                yaml.load(config.read()),
+                {
+                    "path": {
+                        "var_interpreted": 4,
+                        "facter_json": {"osfamily": "Debian"},
+                        "facter_yaml": {"osfamily": "Debian"},
+                        "pi": "3.14\n"
+                    }
+                }
+            )
+
     def test_builder(self):
         from c2c.template import main
         sys.argv = [
