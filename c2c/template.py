@@ -303,5 +303,28 @@ def read_vars(vars_file):
 
                 new_vars[var_name] = evaluated
 
-    current_vars.update(new_vars)
+    update_paths = []
+    for update_path in used.get("update_paths", []):
+        split_path = update_path.split(".")
+        for i in range(len(split_path)):
+            update_paths.append(".".join(split_path[:i+1]))
+    update_vars(current_vars, new_vars, set(update_paths))
     return current_vars
+
+
+def update_vars(current_vars, new_vars, update_paths, path=None):
+    for key, value in new_vars.items():
+        if "." in key:  # pragma: nocover
+            print("WARNING: the key '%s' has a dot" % key)
+        key_path = key if path is None else "%s.%s" % (path, key)
+        if key_path in update_paths:
+            if isinstance(value, dict) and isinstance(current_vars.get(key), dict):
+                update_vars(current_vars.get(key), value, update_paths, key_path)
+            elif isinstance(value, list) and isinstance(current_vars.get(key), list):
+                current_vars.get(key).extend(value)
+            else:  # pragma: nocover
+                print("ERROR: Unable to update the path '%s', types '%r', '%r'." % (
+                    key_path, type(value), type(current_vars.get(key))
+                ))
+        else:
+            current_vars[key] = value

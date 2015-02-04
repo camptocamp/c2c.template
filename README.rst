@@ -47,6 +47,9 @@ The vars collector gets the vars from YAML files like this one:
             vars: ["pi"]
             cmd: ["node", "-e"]
 
+    update_path:
+    - obj
+
 The ``inherit.yaml`` is an other file with the same syntax that will provide
 initial vars.
 
@@ -57,7 +60,10 @@ The ``interpreted`` configuration to interpret some vars,
 ``python``, ``bash``, ``environ``, ``json``, ``yaml`` are predefined
 interpreter, ``node`` is a custom interpreter.
 
-The ``combined_var`` reuse a predefined variable and format,
+The ``update_path`` is a list of '.'-separated paths that will be updated (for dicts)
+or appended (for lists), instead of overwritten. The sub path will be implicitly added.
+
+We can reuse predefined variables and format them (see ``combined_var``),
 See: `str.format() <https://docs.python.org/2/library/string.html#formatstrings>`_.
 
 

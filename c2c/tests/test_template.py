@@ -139,3 +139,23 @@ class TestTemplate(TestCase):
                 test.read(),
                 "var1: first\nvar2: 2"
             )
+
+    def test_update(self):
+        from c2c.template import main
+        sys.argv = [
+            '', '--vars', 'c2c/tests/update.yaml',
+            '--get-config', 'config.yaml', 'obj'
+        ]
+        main()
+
+        with open('config.yaml') as config:
+            self.assertEquals(
+                yaml.load(config.read()),
+                {
+                    'obj': {
+                        'v1': 1,
+                        'v2': 5,
+                        'v3': [1, 2, 3, 3, 4, 5]
+                    }
+                }
+            )
