@@ -89,16 +89,16 @@ def main():
 
     used_vars = read_vars(options.vars)
 
-    def format_walker(curent_vars):
-        if isinstance(curent_vars, basestring):
-            return curent_vars.format(**used_vars)
-        elif isinstance(curent_vars, list):
-            return [format_walker(var) for var in curent_vars]
-        elif isinstance(curent_vars, dict):
-            for key in curent_vars.keys():
-                curent_vars[key] = format_walker(curent_vars[key])
-            return curent_vars
-        return curent_vars
+    def format_walker(current_vars):
+        if isinstance(current_vars, basestring):
+            return current_vars.format(**used_vars)
+        elif isinstance(current_vars, list):
+            return [format_walker(var) for var in current_vars]
+        elif isinstance(current_vars, dict):
+            for key in current_vars.keys():
+                current_vars[key] = format_walker(current_vars[key])
+            return current_vars
+        return current_vars
     used_vars = format_walker(used_vars)
 
     for get_var in options.get_vars:
@@ -197,9 +197,9 @@ def read_vars(vars_file):
     with open(vars_file, 'r') as file_open:
         used = yaml.load(file_open.read())
 
-    curent_vars = {}
+    current_vars = {}
     if 'extends' in used:
-        curent_vars = read_vars(used['extends'])
+        current_vars = read_vars(used['extends'])
 
     new_vars = used['vars']
 
@@ -303,5 +303,5 @@ def read_vars(vars_file):
 
                 new_vars[var_name] = evaluated
 
-    curent_vars.update(new_vars)
-    return curent_vars
+    current_vars.update(new_vars)
+    return current_vars
