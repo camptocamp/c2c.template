@@ -150,6 +150,20 @@ def main():
         _proceed(files, used_vars, options)
 
 
+def get_path(value, path):
+    split_path = path.split(".")
+    parent = None
+    for element in split_path:
+        parent = value
+        value = parent[element]
+    return (parent, split_path[-1]), value
+
+
+def set_path(item, value):
+    parent, element = item
+    parent[element] = value
+
+
 def _proceed(files, used_vars, options):
     if options.engine == 'jinja':
         from bottle import jinja2_template as engine
@@ -224,9 +238,9 @@ def read_vars(vars_file):
         for interpreter in interpreters:
             for var_name in interpreter["vars"]:
                 try:
-                    expression = new_vars[var_name]
+                    item, expression = get_path(new_vars, var_name)
                 except KeyError:  # pragma: nocover
-                    print("ERROR: Expression for key not found: %s" % key)
+                    print("ERROR: Expression for key not found: %s" % var_name)
                     exit(1)
 
                 if "cmd" in interpreter:
@@ -301,7 +315,7 @@ def read_vars(vars_file):
                     print("Unknown interpreter name '{}'.".format(interpreter["name"]))
                     exit(1)
 
-                new_vars[var_name] = evaluated
+                set_path(item, evaluated)
 
     current_vars.update(new_vars)
     return current_vars

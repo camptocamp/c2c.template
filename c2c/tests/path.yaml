@@ -1,0 +1,20 @@
+vars:
+    path:
+        var_interpreted: 2+2
+        facter_json: /usr/bin/facter --json osfamily
+        facter_yaml: /usr/bin/facter --yaml osfamily
+        pi: console.log(Math.PI.toPrecision(3))
+
+interpreted:
+    python:
+    - path.var_interpreted
+    bash:
+    - path.facter_json
+    - path.facter_yaml
+    json:
+    - path.facter_json
+    yaml:
+    - path.facter_yaml
+    node:
+        vars: ["path.pi"]
+        cmd: ["node", "-e"]
