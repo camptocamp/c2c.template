@@ -35,6 +35,7 @@ import json
 import yaml
 from yaml.parser import ParserError
 from argparse import ArgumentParser
+from string import Formatter
 from z3c.recipe.filetemplate import Template
 from subprocess import CalledProcessError
 try:
@@ -89,17 +90,45 @@ def main():
 
     used_vars = read_vars(options.vars)
 
-    def format_walker(current_vars):
+    formatter = Formatter()
+    formatted = []
+
+    def format_walker(current_vars, path=None):
         if isinstance(current_vars, basestring):
-            return current_vars.format(**used_vars)
+            if path not in formatted:
+                attrs = formatter.parse(current_vars)
+                for _, attr, _, _ in attrs:
+                    if attr is not None and attr not in formatted:
+                        return current_vars, 1
+                formatted.append(path)
+                return current_vars.format(**used_vars), 0
+            return current_vars, 0
+
         elif isinstance(current_vars, list):
-            return [format_walker(var) for var in current_vars]
+            formatteds = [
+                format_walker(var, "%s[%i]" % (path, index))
+                for index, var in enumerate(current_vars)
+            ]
+            return [v for v, s in formatteds], sum([s for v, s in formatteds])
+
         elif isinstance(current_vars, dict):
+            skip = 0
             for key in current_vars.keys():
-                current_vars[key] = format_walker(current_vars[key])
-            return current_vars
-        return current_vars
-    used_vars = format_walker(used_vars)
+                if path is None:
+                    current_path = key
+                else:
+                    current_path = "%s[%s]" % (path, key)
+                current_formatted = format_walker(current_vars[key], current_path)
+                current_vars[key] = current_formatted[0]
+                skip += current_formatted[1]
+            return current_vars, skip
+
+        return current_vars, 0
+    old_skip = 0
+    skip = -1
+    while old_skip != skip and skip != 0:
+        old_skip = skip
+        used_vars, skip = format_walker(used_vars)
 
     for get_var in options.get_vars:
         corresp = get_var.split('=')

@@ -180,3 +180,19 @@ class TestTemplate(TestCase):
                     }
                 }
             )
+
+    def test_recursive(self):
+        from c2c.template import main
+        sys.argv = [
+            "", "--vars", "c2c/tests/recursive.yaml",
+            "--get-config", "config.yaml", "3third"
+        ]
+        main()
+
+        with open("config.yaml") as config:
+            self.assertEquals(
+                yaml.load(config.read()),
+                {
+                    "3third": "wanted"
+                }
+            )
