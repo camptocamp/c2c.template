@@ -120,7 +120,8 @@ def main():
             var_path = v.split('.')
             value = used_vars
             for key in var_path:
-                value = value[key]
+                if key in value:
+                    value = value[key]
             new_vars[v] = value
 
         with open(options.get_config[0], 'wt') as file_open:
