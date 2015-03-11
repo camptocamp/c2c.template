@@ -1,0 +1,4 @@
+vars:
+    1first: "wanted"
+    2second: "{1first}"
+    3third: "{2second}"
