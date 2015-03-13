@@ -122,6 +122,8 @@ def main():
                 current_vars[key] = current_formatted[0]
                 skip += current_formatted[1]
             return current_vars, skip
+        else:
+            formatted.append(path)
 
         return current_vars, 0
     old_skip = 0
