@@ -196,3 +196,19 @@ class TestTemplate(TestCase):
                     "3third": "wanted"
                 }
             )
+
+    def test_recursiveint(self):
+        from c2c.template import main
+        sys.argv = [
+            "", "--vars", "c2c/tests/recursive_int.yaml",
+            "--get-config", "config.yaml", "3third"
+        ]
+        main()
+
+        with open("config.yaml") as config:
+            self.assertEquals(
+                yaml.load(config.read()),
+                {
+                    "3third": "123"
+                }
+            )
