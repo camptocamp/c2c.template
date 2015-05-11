@@ -155,7 +155,7 @@ def main():
                     value = value[key]
             new_vars[v] = value
 
-        with open(options.get_config[0], 'wt') as file_open:
+        with open(options.get_config[0], 'wb') as file_open:
             file_open.write(yaml.dump(new_vars))
 
     if options.files_builder is not None:
@@ -234,7 +234,7 @@ def bottle_template(files, used_vars, engine):
 
 
 def save(template, destination, processed):
-    with open(destination, 'wt') as file_open:
+    with open(destination, 'wb') as file_open:
         file_open.write(processed.encode("utf-8"))
     os.chmod(destination, os.stat(template).st_mode)
 
