@@ -39,7 +39,6 @@ install_requires = [
     'bottle',
     'Jinja2',
     'Mako',
-    'z3c.recipe.filetemplate',
     'PyYAML',
 ]
 

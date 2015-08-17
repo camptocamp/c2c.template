@@ -36,7 +36,6 @@ import yaml
 from yaml.parser import ParserError
 from argparse import ArgumentParser
 from string import Formatter
-from z3c.recipe.filetemplate import Template
 from subprocess import CalledProcessError
 try:
     from subprocess import check_output
@@ -216,13 +215,19 @@ def _proceed(files, used_vars, options):
             processed = unicode(c2c_template.substitute(), "utf8")
             save(template, destination, processed)
 
+try:
+    from z3c.recipe.filetemplate import Template
 
-class C2cTemplate(Template):
-    def _get(self, section, option, start):
-        if self.section and section is not None:
-            return self.recipe[section][option]  # pragma: nocover
-        else:
-            return self.recipe[option]
+    class C2cTemplate(Template):  # pragma: nocover
+        def _get(self, section, option, start):
+            if self.section and section is not None:
+                return self.recipe[section][option]
+            else:
+                return self.recipe[option]
+except ImportError:
+    class C2cTemplate:
+        def __init__(self, *args):
+            raise Exception("The egg 'z3c.recipe.filetemplate' is missing.")
 
 
 def bottle_template(files, used_vars, engine):
