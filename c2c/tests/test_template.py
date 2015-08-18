@@ -30,8 +30,9 @@
 
 import sys
 import yaml
-from unittest import TestCase
 from StringIO import StringIO
+from unittest import TestCase
+from nose.plugins.attrib import attr
 
 
 class TestTemplate(TestCase):
@@ -69,6 +70,7 @@ class TestTemplate(TestCase):
             'var_interpreted: 4\n'
         )
 
+    @attr(template=True)
     def test_template(self):
         from c2c.template import main
         sys.argv = [
