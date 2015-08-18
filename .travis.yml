@@ -16,7 +16,7 @@ install:
 script: 
 - venv/bin/flake8 --version
 - venv/bin/flake8 c2c --max-line-length=100
-- venv/bin/python setup.py nosetests 
+- venv/bin/python setup.py nosetests -a '!template'
 
 after_success:
 - pip install coveralls
