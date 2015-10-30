@@ -286,19 +286,27 @@ def read_vars(vars_file):
                         ))
                         exit(1)
                     except CalledProcessError as e:  # pragma: nocover
-                        print("ERROR when running the expression '%r': %s" % (
+                        error = "ERROR when running the expression '%r': %s" % (
                             expression, e
-                        ))
-                        exit(1)
+                        )
+                        print(error)
+                        if interpreter.get("ignore_error", False):
+                            evaluated = error
+                        else:
+                            exit(1)
 
                 elif interpreter["name"] == "python":
                     try:
                         evaluated = eval(expression, globs)
                     except:  # pragma: nocover
-                        print("ERROR when evaluating %r expression %r as Python:\n%s" % (
+                        error = "ERROR when evaluating %r expression %r as Python:\n%s" % (
                             var_name, expression, traceback.format_exc()
-                        ))
-                        exit(1)
+                        )
+                        print(error)
+                        if interpreter.get("ignore_error", False):
+                            evaluated = error
+                        else:
+                            exit(1)
                 elif interpreter["name"] == 'bash':
                     try:
                         evaluated = check_output(expression, shell=True)
@@ -308,10 +316,14 @@ def read_vars(vars_file):
                         ))
                         exit(1)
                     except CalledProcessError as e:  # pragma: nocover
-                        print("ERROR when running the expression '%r': %s" % (
+                        error = "ERROR when running the expression '%r': %s" % (
                             expression, e
-                        ))
-                        exit(1)
+                        )
+                        print(error)
+                        if interpreter.get("ignore_error", False):
+                            evaluated = error
+                        else:
+                            exit(1)
 
                 elif interpreter["name"] == 'environment':  # pragma: nocover
                     if expression is None:
@@ -320,29 +332,40 @@ def read_vars(vars_file):
                         try:
                             evaluated = os.environ[expression]
                         except KeyError:
-                            print(
-                                "ERROR when getting %r in environment variables, "
+                            error = \
+                                "ERROR when getting %r in environment variables, " \
                                 "possible values are: %r" % (
                                     expression, os.environ.keys()
                                 )
-                            )
-                            exit(1)
+                            print(error)
+                            if interpreter.get("ignore_error", False):
+                                evaluated = error
+                            else:
+                                exit(1)
                 elif interpreter["name"] == 'json':
                     try:
                         evaluated = json.loads(expression)
                     except ValueError as e:  # pragma: nocover
-                        print("ERROR when evaluating %r expression %r as JSON: %s" % (
+                        error = "ERROR when evaluating %r expression %r as JSON: %s" % (
                             key, expression, e
-                        ))
-                        exit(1)
+                        )
+                        print(error)
+                        if interpreter.get("ignore_error", False):
+                            evaluated = error
+                        else:
+                            exit(1)
                 elif interpreter["name"] == 'yaml':
                     try:
                         evaluated = yaml.load(expression)
                     except ParserError as e:  # pragma: nocover
-                        print("ERROR when evaluating %r expression %r as YAML: %s" % (
+                        error = "ERROR when evaluating %r expression %r as YAML: %s" % (
                             key, expression, e
-                        ))
-                        exit(1)
+                        )
+                        print(error)
+                        if interpreter.get("ignore_error", False):
+                            evaluated = error
+                        else:
+                            exit(1)
                 else:  # pragma: nocover
                     print("Unknown interpreter name '{}'.".format(interpreter["name"]))
                     exit(1)
@@ -353,7 +376,7 @@ def read_vars(vars_file):
     for update_path in used.get("update_paths", []):
         split_path = update_path.split(".")
         for i in range(len(split_path)):
-            update_paths.append(".".join(split_path[:i+1]))
+            update_paths.append(".".join(split_path[:i + 1]))
     update_vars(current_vars, new_vars, set(update_paths))
     return current_vars
 
