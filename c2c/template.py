@@ -153,6 +153,10 @@ def main():
             for key in var_path:
                 if key in value:
                     value = value[key]
+                else:
+                    print("ERROR the variable '%s' don't exists." % v)
+                    exit(1)
+
             new_vars[v] = value
 
         with open(options.get_config[0], 'wb') as file_open:
