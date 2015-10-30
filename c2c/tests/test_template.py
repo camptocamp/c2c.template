@@ -37,6 +37,8 @@ from nose.plugins.attrib import attr
 
 class TestTemplate(TestCase):
 
+    maxDiff = None
+
     def test_jinja(self):
         from c2c.template import main
         sys.argv = [
@@ -121,6 +123,15 @@ class TestTemplate(TestCase):
                     }
                 }
             )
+
+    def test_get_config_wrong(self):
+        from c2c.template import main
+        sys.argv = [
+            '', '--vars', 'c2c/tests/vars.yaml',
+            '--get-config', 'config.yaml', 'wrong'
+        ]
+        with self.assertRaises(SystemExit):
+            main()
 
     def test_path(self):
         from c2c.template import main
