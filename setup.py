@@ -45,7 +45,7 @@ install_requires = [
 
 setup(
     name='c2c.template',
-    version='1.1.1',
+    version='1.1.2',
     description='Vars collector and template runner.',
     long_description=README,
     namespace_packages=['c2c'],
