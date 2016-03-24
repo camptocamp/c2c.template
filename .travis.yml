@@ -1,6 +1,5 @@
 language: python
 python:
-- 2.6
 - 2.7
 - 3.2
 - 3.3
@@ -24,5 +23,16 @@ after_success:
 
 notifications:
   email:
-    recipients:
-    - stephane.brunner@camptocamp.com
+    on_failure: change
+
+deploy:
+- provider: pypi
+  user: sbrunner
+  password:
+    secure: "kfcnO7uC+qIiG7xoK00FB/7xgMO7bLmAHjLqgpETXDA41VHWNhn8pMZJXxeY0fsNIQ/ETTHfVV0Di32hnvEnIKI/l4JUzPTPqrFKPRdwzpqHehrcxUOZXRSf2nOJd45w8ubnv/RLzfnUV/FMU9mK0smwiSNtIwk0G8SVEE59GxI="
+  skip_cleanup: true
+  distributions: sdist bdist_wheel
+  on:
+    tags: true
+    python: 3.4
+    condition: "${TRAVIS_TAG}" == "`python setup.py --version`"
