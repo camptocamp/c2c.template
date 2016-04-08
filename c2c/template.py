@@ -236,7 +236,7 @@ def _proceed(files, used_vars, options):
         from bottle import mako_template as engine
         bottle_template(files, used_vars, engine)
 
-    elif options.engine == 'template':
+    elif options.engine == 'template':  # pragma: nocover
         for template, destination in files:
             c2c_template = C2cTemplate(
                 template,
@@ -258,7 +258,7 @@ try:
                 return self.recipe[option]
 except ImportError:
     class C2cTemplate:
-        def __init__(self, *args):
+        def __init__(self, *args):  # pragma: nocover
             raise Exception("The egg 'z3c.recipe.filetemplate' is missing.")
 
 

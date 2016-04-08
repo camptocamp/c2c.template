@@ -74,7 +74,7 @@ class TestTemplate(TestCase):
         )
 
     @attr(template=True)
-    def test_template(self):
+    def test_template(self):  # pragma: nocover
         from c2c.template import main
         sys.argv = [
             '', '--engine', 'template', '--vars', 'c2c/tests/vars.yaml',
