@@ -31,7 +31,7 @@
 import os
 import sys
 import yaml
-from StringIO import StringIO
+from six import StringIO
 from unittest import TestCase
 from nose.plugins.attrib import attr
 
@@ -55,7 +55,7 @@ class TestTemplate(TestCase):
             'var_interpreted: 4\n'
             'JSON kernel: Linux\n'
             'YAML kernel: Linux\n'
-            'pi: 3.14\n'
+            'pi: 3.14'
         )
 
     def test_mako(self):
@@ -84,9 +84,9 @@ class TestTemplate(TestCase):
 
         self.assertEquals(
             open('c2c/tests/template', 'r').read(),
-            'var1: first, var2: second\n'
-            'var3: first, second, third\n'
-            'var_interpreted: 4\n'
+            'var1: first, var2: second'
+            'var3: first, second, third'
+            'var_interpreted: 4'
         )
 
     def test_get_var(self):
@@ -154,7 +154,7 @@ class TestTemplate(TestCase):
                             "var_interpreted": 4,
                             "facter_json": {"osfamily": "Debian"},
                             "facter_yaml": {"osfamily": "Debian"},
-                            "pi": "3.14\n"
+                            "pi": "3.14"
                         }
                     },
                     'environment': []

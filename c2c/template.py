@@ -38,6 +38,7 @@ from yaml.parser import ParserError
 from argparse import ArgumentParser
 from string import Formatter
 from subprocess import CalledProcessError
+from six import string_types, text_type
 try:
     from subprocess import check_output
 except ImportError:  # pragma: nocover
@@ -117,7 +118,7 @@ def main():
     formatted = []
 
     def format_walker(current_vars, path=None):
-        if isinstance(current_vars, basestring):
+        if isinstance(current_vars, string_types):
             if path not in formatted:
                 attrs = formatter.parse(current_vars)
                 for _, attr, _, _ in attrs:
@@ -186,7 +187,7 @@ def main():
         new_vars["environment"] = config.get("runtime_environment", [])
 
         with open(options.get_config[0], 'wb') as file_open:
-            file_open.write(yaml.dump(new_vars))
+            file_open.write(yaml.dump(new_vars).encode('utf-8'))
 
     if options.files_builder is not None:
         var_path = options.files_builder[2].split('.')
@@ -243,7 +244,7 @@ def _proceed(files, used_vars, options):
                 used_vars
             )
             c2c_template.section = options.section
-            processed = unicode(c2c_template.substitute(), "utf8")
+            processed = text_type(c2c_template.substitute(), "utf8")
             save(template, destination, processed)
 
 try:
@@ -315,7 +316,7 @@ def read_vars(vars_file):
                     cmd = interpreter["cmd"][:]  # [:] to clone
                     cmd.append(expression)
                     try:
-                        evaluated = check_output(cmd)
+                        evaluated = check_output(cmd).decode('utf-8').strip('\n')
                     except OSError as e:  # pragma: nocover
                         print("ERROR when running the expression '%r': %s" % (
                             expression, e
@@ -345,7 +346,7 @@ def read_vars(vars_file):
                             exit(1)
                 elif interpreter["name"] == 'bash':
                     try:
-                        evaluated = check_output(expression, shell=True)
+                        evaluated = check_output(expression, shell=True).decode('utf-8').strip('\n')
                     except OSError as e:  # pragma: nocover
                         print("ERROR when running the expression '%r': %s" % (
                             expression, e

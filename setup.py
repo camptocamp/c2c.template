@@ -40,6 +40,7 @@ install_requires = [
     'Jinja2',
     'Mako',
     'PyYAML',
+    'six',
 ]
 
 setup(
