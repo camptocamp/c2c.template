@@ -24,3 +24,8 @@ interpreted:
     node:
         vars: ["pi"]
         cmd: ["node", "-e"]
+
+runtime_environment:
+- aa
+- bb.cc
+- dd\.ee

@@ -28,6 +28,7 @@
 # either expressed or implied, of the FreeBSD Project.
 
 
+import os
 import sys
 import yaml
 from StringIO import StringIO
@@ -102,7 +103,7 @@ class TestTemplate(TestCase):
         )
         sys.stdout = sys.__stdout__
 
-    def test_get_config(self):
+    def test_gen_config(self):
         from c2c.template import main
         sys.argv = [
             '', '--vars', 'c2c/tests/vars.yaml',
@@ -114,13 +115,16 @@ class TestTemplate(TestCase):
             self.assertEquals(
                 yaml.load(config.read()),
                 {
-                    'var_interpreted': 4,
-                    'var1': 'first',
-                    'obj': {
-                        'v1': 1,
-                        'v2': '2',
-                        'v3': [1, 2, 3]
-                    }
+                    'vars': {
+                        'var_interpreted': 4,
+                        'var1': 'first',
+                        'obj': {
+                            'v1': 1,
+                            'v2': '2',
+                            'v3': [1, 2, 3]
+                        }
+                    },
+                    'environment': ['aa', 'bb.cc', 'dd\.ee']
                 }
             )
 
@@ -145,12 +149,15 @@ class TestTemplate(TestCase):
             self.assertEquals(
                 yaml.load(config.read()),
                 {
-                    "path": {
-                        "var_interpreted": 4,
-                        "facter_json": {"osfamily": "Debian"},
-                        "facter_yaml": {"osfamily": "Debian"},
-                        "pi": "3.14\n"
-                    }
+                    "vars": {
+                        "path": {
+                            "var_interpreted": 4,
+                            "facter_json": {"osfamily": "Debian"},
+                            "facter_yaml": {"osfamily": "Debian"},
+                            "pi": "3.14\n"
+                        }
+                    },
+                    'environment': []
                 }
             )
 
@@ -186,11 +193,14 @@ class TestTemplate(TestCase):
             self.assertEquals(
                 yaml.load(config.read()),
                 {
-                    'obj': {
-                        'v1': 1,
-                        'v2': 5,
-                        'v3': [1, 2, 3, 3, 4, 5]
-                    }
+                    'vars': {
+                        'obj': {
+                            'v1': 1,
+                            'v2': 5,
+                            'v3': [1, 2, 3, 3, 4, 5]
+                        }
+                    },
+                    'environment': []
                 }
             )
 
@@ -206,7 +216,10 @@ class TestTemplate(TestCase):
             self.assertEquals(
                 yaml.load(config.read()),
                 {
-                    "3third": "wanted"
+                    'vars': {
+                        "3third": "wanted"
+                    },
+                    'environment': []
                 }
             )
 
@@ -222,6 +235,22 @@ class TestTemplate(TestCase):
             self.assertEquals(
                 yaml.load(config.read()),
                 {
-                    "3third": "123"
+                    'vars': {
+                        "3third": "123"
+                    },
+                    'environment': []
                 }
             )
+
+    def test_get_config(self):
+        from c2c.template import get_config
+
+        os.environ['AA'] = '11'
+        os.environ['BB_CC'] = '22_33'
+        os.environ['DD_EE'] = '44_55'
+
+        config = get_config('c2c/tests/config.yaml')
+
+        self.assertEquals(config['aa'], '11')
+        self.assertEquals(config['bb']['cc'], '22_33')
+        self.assertEquals(config['dd.ee'], '44_55')

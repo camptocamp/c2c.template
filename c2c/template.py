@@ -31,6 +31,7 @@
 import os
 import sys
 import traceback
+import re
 import json
 import yaml
 from yaml.parser import ParserError
@@ -47,6 +48,29 @@ except ImportError:  # pragma: nocover
         p = Popen(cmd, cwd=cwd, stdin=stdin, stderr=stderr, shell=shell, stdout=PIPE)
         out, err = p.communicate()
         return out
+
+
+DOT_SPLITTER_RE = re.compile(r"(?<!\\)\.")
+ESCAPE_DOT_RE = re.compile(r"\\.")
+
+
+def dot_split(string):
+    result = DOT_SPLITTER_RE.split(string)
+    return [ESCAPE_DOT_RE.sub('.', i) for i in result if i != ""]
+
+
+def get_config(file_name):
+    with open(file_name) as f:
+        config = yaml.load(f.read())
+    vars_ = config["vars"]
+    for var in config.get("environment", []):
+        var_path = dot_split(var)
+        value = vars_
+        for key in var_path[:-1]:
+            if key in value:
+                value = value[key]
+        value[var_path[-1]] = os.environ[value[var_path[-1]]]
+    return vars_
 
 
 def main():
@@ -87,7 +111,7 @@ def main():
     )
     options = parser.parse_args()
 
-    used_vars = read_vars(options.vars)
+    used_vars, config = read_vars(options.vars)
 
     formatter = Formatter()
     formatted = []
@@ -145,7 +169,9 @@ def main():
         print("%s=%r" % (corresp[0], used_vars[corresp[1]]))
 
     if options.get_config is not None:
-        new_vars = {}
+        new_vars = {
+            "vars": {}
+        }
         for v in options.get_config[1:]:
             var_path = v.split('.')
             value = used_vars
@@ -156,7 +182,8 @@ def main():
                     print("ERROR the variable '%s' don't exists." % v)
                     exit(1)
 
-            new_vars[v] = value
+            new_vars["vars"][v] = value
+        new_vars["environment"] = config.get("runtime_environment", [])
 
         with open(options.get_config[0], 'wb') as file_open:
             file_open.write(yaml.dump(new_vars))
@@ -254,7 +281,7 @@ def read_vars(vars_file):
 
     current_vars = {}
     if 'extends' in used:
-        current_vars = read_vars(used['extends'])
+        current_vars, _ = read_vars(used['extends'])
 
     new_vars = used['vars']
 
@@ -387,7 +414,7 @@ def read_vars(vars_file):
         for i in range(len(split_path)):
             update_paths.append(".".join(split_path[:i + 1]))
     update_vars(current_vars, new_vars, set(update_paths))
-    return current_vars
+    return current_vars, used
 
 
 def update_vars(current_vars, new_vars, update_paths, path=None):
