@@ -3,8 +3,11 @@ extends: c2c/tests/inherit.yaml
 vars:
     var1: first
     var_interpreted: 2+2
-    facter_json: /usr/bin/facter --json
-    facter_yaml: /usr/bin/facter --yaml
+    facter_json: |
+        echo '{ "kernel": "Linux", "osfamily": "Debian" }'
+    facter_yaml: |-
+        echo "kernel: 'Linux'
+        osfamily: Debian"
     pi: console.log(Math.PI.toPrecision(3))
     obj:
         v1: 1
