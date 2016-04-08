@@ -107,11 +107,11 @@ class TestTemplate(TestCase):
         from c2c.template import main
         sys.argv = [
             '', '--vars', 'c2c/tests/vars.yaml',
-            '--get-config', 'config.yaml', 'var_interpreted', 'var1', 'obj'
+            '--get-config', 'config1.yaml', 'var_interpreted', 'var1', 'obj'
         ]
         main()
 
-        with open('config.yaml') as config:
+        with open('config1.yaml') as config:
             self.assertEquals(
                 yaml.load(config.read()),
                 {
@@ -132,7 +132,7 @@ class TestTemplate(TestCase):
         from c2c.template import main
         sys.argv = [
             '', '--vars', 'c2c/tests/vars.yaml',
-            '--get-config', 'config.yaml', 'wrong'
+            '--get-config', 'config2.yaml', 'wrong'
         ]
         with self.assertRaises(SystemExit):
             main()
@@ -141,11 +141,11 @@ class TestTemplate(TestCase):
         from c2c.template import main
         sys.argv = [
             "", "--vars", "c2c/tests/path.yaml",
-            "--get-config", "config.yaml", "path"
+            "--get-config", "config3.yaml", "path"
         ]
         main()
 
-        with open("config.yaml") as config:
+        with open("config3.yaml") as config:
             self.assertEquals(
                 yaml.load(config.read()),
                 {
@@ -185,11 +185,11 @@ class TestTemplate(TestCase):
         from c2c.template import main
         sys.argv = [
             '', '--vars', 'c2c/tests/update.yaml',
-            '--get-config', 'config.yaml', 'obj'
+            '--get-config', 'config4.yaml', 'obj'
         ]
         main()
 
-        with open('config.yaml') as config:
+        with open('config4.yaml') as config:
             self.assertEquals(
                 yaml.load(config.read()),
                 {
@@ -208,11 +208,11 @@ class TestTemplate(TestCase):
         from c2c.template import main
         sys.argv = [
             "", "--vars", "c2c/tests/recursive.yaml",
-            "--get-config", "config.yaml", "3third"
+            "--get-config", "config5.yaml", "3third"
         ]
         main()
 
-        with open("config.yaml") as config:
+        with open("config5.yaml") as config:
             self.assertEquals(
                 yaml.load(config.read()),
                 {
@@ -227,11 +227,11 @@ class TestTemplate(TestCase):
         from c2c.template import main
         sys.argv = [
             "", "--vars", "c2c/tests/recursive_int.yaml",
-            "--get-config", "config.yaml", "3third"
+            "--get-config", "config6.yaml", "3third"
         ]
         main()
 
-        with open("config.yaml") as config:
+        with open("config6.yaml") as config:
             self.assertEquals(
                 yaml.load(config.read()),
                 {
