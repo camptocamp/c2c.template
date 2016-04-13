@@ -1,8 +1,10 @@
 vars:
     path:
         var_interpreted: 2+2
-        facter_json: /usr/bin/facter --json osfamily
-        facter_yaml: /usr/bin/facter --yaml osfamily
+        facter_json: |
+            echo '{ "osfamily": "Debian" }'
+        facter_yaml: |
+            echo 'osfamily: Debian'
         pi: console.log(Math.PI.toPrecision(3))
 
 interpreted:

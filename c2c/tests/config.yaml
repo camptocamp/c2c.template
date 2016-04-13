@@ -1,0 +1,11 @@
+vars:
+
+    aa: AA
+    bb:
+        cc: BB_CC
+    dd.ee: DD_EE
+
+environment:
+- aa
+- bb.cc
+- dd\.ee

@@ -1,2 +1,1 @@
---index-url http://pypi.camptocamp.net/pypi
 -e .

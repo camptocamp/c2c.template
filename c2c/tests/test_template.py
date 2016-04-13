@@ -28,9 +28,10 @@
 # either expressed or implied, of the FreeBSD Project.
 
 
+import os
 import sys
 import yaml
-from StringIO import StringIO
+from six import StringIO
 from unittest import TestCase
 from nose.plugins.attrib import attr
 
@@ -54,7 +55,7 @@ class TestTemplate(TestCase):
             'var_interpreted: 4\n'
             'JSON kernel: Linux\n'
             'YAML kernel: Linux\n'
-            'pi: 3.14\n'
+            'pi: 3.14'
         )
 
     def test_mako(self):
@@ -73,7 +74,7 @@ class TestTemplate(TestCase):
         )
 
     @attr(template=True)
-    def test_template(self):
+    def test_template(self):  # pragma: nocover
         from c2c.template import main
         sys.argv = [
             '', '--engine', 'template', '--vars', 'c2c/tests/vars.yaml',
@@ -83,9 +84,9 @@ class TestTemplate(TestCase):
 
         self.assertEquals(
             open('c2c/tests/template', 'r').read(),
-            'var1: first, var2: second\n'
-            'var3: first, second, third\n'
-            'var_interpreted: 4\n'
+            'var1: first, var2: second'
+            'var3: first, second, third'
+            'var_interpreted: 4'
         )
 
     def test_get_var(self):
@@ -102,25 +103,28 @@ class TestTemplate(TestCase):
         )
         sys.stdout = sys.__stdout__
 
-    def test_get_config(self):
+    def test_gen_config(self):
         from c2c.template import main
         sys.argv = [
             '', '--vars', 'c2c/tests/vars.yaml',
-            '--get-config', 'config.yaml', 'var_interpreted', 'var1', 'obj'
+            '--get-config', 'config1.yaml', 'var_interpreted', 'var1', 'obj'
         ]
         main()
 
-        with open('config.yaml') as config:
+        with open('config1.yaml') as config:
             self.assertEquals(
                 yaml.load(config.read()),
                 {
-                    'var_interpreted': 4,
-                    'var1': 'first',
-                    'obj': {
-                        'v1': 1,
-                        'v2': '2',
-                        'v3': [1, 2, 3]
-                    }
+                    'vars': {
+                        'var_interpreted': 4,
+                        'var1': 'first',
+                        'obj': {
+                            'v1': 1,
+                            'v2': '2',
+                            'v3': [1, 2, 3]
+                        }
+                    },
+                    'environment': ['aa', 'bb.cc', 'dd\.ee']
                 }
             )
 
@@ -128,7 +132,7 @@ class TestTemplate(TestCase):
         from c2c.template import main
         sys.argv = [
             '', '--vars', 'c2c/tests/vars.yaml',
-            '--get-config', 'config.yaml', 'wrong'
+            '--get-config', 'config2.yaml', 'wrong'
         ]
         with self.assertRaises(SystemExit):
             main()
@@ -137,20 +141,23 @@ class TestTemplate(TestCase):
         from c2c.template import main
         sys.argv = [
             "", "--vars", "c2c/tests/path.yaml",
-            "--get-config", "config.yaml", "path"
+            "--get-config", "config3.yaml", "path"
         ]
         main()
 
-        with open("config.yaml") as config:
+        with open("config3.yaml") as config:
             self.assertEquals(
                 yaml.load(config.read()),
                 {
-                    "path": {
-                        "var_interpreted": 4,
-                        "facter_json": {"osfamily": "Debian"},
-                        "facter_yaml": {"osfamily": "Debian"},
-                        "pi": "3.14\n"
-                    }
+                    "vars": {
+                        "path": {
+                            "var_interpreted": 4,
+                            "facter_json": {"osfamily": "Debian"},
+                            "facter_yaml": {"osfamily": "Debian"},
+                            "pi": "3.14"
+                        }
+                    },
+                    'environment': []
                 }
             )
 
@@ -178,19 +185,22 @@ class TestTemplate(TestCase):
         from c2c.template import main
         sys.argv = [
             '', '--vars', 'c2c/tests/update.yaml',
-            '--get-config', 'config.yaml', 'obj'
+            '--get-config', 'config4.yaml', 'obj'
         ]
         main()
 
-        with open('config.yaml') as config:
+        with open('config4.yaml') as config:
             self.assertEquals(
                 yaml.load(config.read()),
                 {
-                    'obj': {
-                        'v1': 1,
-                        'v2': 5,
-                        'v3': [1, 2, 3, 3, 4, 5]
-                    }
+                    'vars': {
+                        'obj': {
+                            'v1': 1,
+                            'v2': 5,
+                            'v3': [1, 2, 3, 3, 4, 5]
+                        }
+                    },
+                    'environment': []
                 }
             )
 
@@ -198,15 +208,18 @@ class TestTemplate(TestCase):
         from c2c.template import main
         sys.argv = [
             "", "--vars", "c2c/tests/recursive.yaml",
-            "--get-config", "config.yaml", "3third"
+            "--get-config", "config5.yaml", "3third"
         ]
         main()
 
-        with open("config.yaml") as config:
+        with open("config5.yaml") as config:
             self.assertEquals(
                 yaml.load(config.read()),
                 {
-                    "3third": "wanted"
+                    'vars': {
+                        "3third": "wanted"
+                    },
+                    'environment': []
                 }
             )
 
@@ -214,14 +227,30 @@ class TestTemplate(TestCase):
         from c2c.template import main
         sys.argv = [
             "", "--vars", "c2c/tests/recursive_int.yaml",
-            "--get-config", "config.yaml", "3third"
+            "--get-config", "config6.yaml", "3third"
         ]
         main()
 
-        with open("config.yaml") as config:
+        with open("config6.yaml") as config:
             self.assertEquals(
                 yaml.load(config.read()),
                 {
-                    "3third": "123"
+                    'vars': {
+                        "3third": "123"
+                    },
+                    'environment': []
                 }
             )
+
+    def test_get_config(self):
+        from c2c.template import get_config
+
+        os.environ['AA'] = '11'
+        os.environ['BB_CC'] = '22_33'
+        os.environ['DD_EE'] = '44_55'
+
+        config = get_config('c2c/tests/config.yaml')
+
+        self.assertEquals(config['aa'], '11')
+        self.assertEquals(config['bb']['cc'], '22_33')
+        self.assertEquals(config['dd.ee'], '44_55')

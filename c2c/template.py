@@ -31,12 +31,14 @@
 import os
 import sys
 import traceback
+import re
 import json
 import yaml
 from yaml.parser import ParserError
 from argparse import ArgumentParser
 from string import Formatter
 from subprocess import CalledProcessError
+from six import string_types, text_type
 try:
     from subprocess import check_output
 except ImportError:  # pragma: nocover
@@ -47,6 +49,29 @@ except ImportError:  # pragma: nocover
         p = Popen(cmd, cwd=cwd, stdin=stdin, stderr=stderr, shell=shell, stdout=PIPE)
         out, err = p.communicate()
         return out
+
+
+DOT_SPLITTER_RE = re.compile(r"(?<!\\)\.")
+ESCAPE_DOT_RE = re.compile(r"\\.")
+
+
+def dot_split(string):
+    result = DOT_SPLITTER_RE.split(string)
+    return [ESCAPE_DOT_RE.sub('.', i) for i in result if i != ""]
+
+
+def get_config(file_name):
+    with open(file_name) as f:
+        config = yaml.load(f.read())
+    vars_ = config["vars"]
+    for var in config.get("environment", []):
+        var_path = dot_split(var)
+        value = vars_
+        for key in var_path[:-1]:
+            if key in value:
+                value = value[key]
+        value[var_path[-1]] = os.environ[value[var_path[-1]]]
+    return vars_
 
 
 def main():
@@ -87,13 +112,13 @@ def main():
     )
     options = parser.parse_args()
 
-    used_vars = read_vars(options.vars)
+    used_vars, config = read_vars(options.vars)
 
     formatter = Formatter()
     formatted = []
 
     def format_walker(current_vars, path=None):
-        if isinstance(current_vars, basestring):
+        if isinstance(current_vars, string_types):
             if path not in formatted:
                 attrs = formatter.parse(current_vars)
                 for _, attr, _, _ in attrs:
@@ -145,7 +170,9 @@ def main():
         print("%s=%r" % (corresp[0], used_vars[corresp[1]]))
 
     if options.get_config is not None:
-        new_vars = {}
+        new_vars = {
+            "vars": {}
+        }
         for v in options.get_config[1:]:
             var_path = v.split('.')
             value = used_vars
@@ -156,10 +183,11 @@ def main():
                     print("ERROR the variable '%s' don't exists." % v)
                     exit(1)
 
-            new_vars[v] = value
+            new_vars["vars"][v] = value
+        new_vars["environment"] = config.get("runtime_environment", [])
 
         with open(options.get_config[0], 'wb') as file_open:
-            file_open.write(yaml.dump(new_vars))
+            file_open.write(yaml.dump(new_vars).encode('utf-8'))
 
     if options.files_builder is not None:
         var_path = options.files_builder[2].split('.')
@@ -208,7 +236,7 @@ def _proceed(files, used_vars, options):
         from bottle import mako_template as engine
         bottle_template(files, used_vars, engine)
 
-    elif options.engine == 'template':
+    elif options.engine == 'template':  # pragma: nocover
         for template, destination in files:
             c2c_template = C2cTemplate(
                 template,
@@ -216,7 +244,7 @@ def _proceed(files, used_vars, options):
                 used_vars
             )
             c2c_template.section = options.section
-            processed = unicode(c2c_template.substitute(), "utf8")
+            processed = text_type(c2c_template.substitute(), "utf8")
             save(template, destination, processed)
 
 try:
@@ -230,7 +258,7 @@ try:
                 return self.recipe[option]
 except ImportError:
     class C2cTemplate:
-        def __init__(self, *args):
+        def __init__(self, *args):  # pragma: nocover
             raise Exception("The egg 'z3c.recipe.filetemplate' is missing.")
 
 
@@ -254,7 +282,7 @@ def read_vars(vars_file):
 
     current_vars = {}
     if 'extends' in used:
-        current_vars = read_vars(used['extends'])
+        current_vars, _ = read_vars(used['extends'])
 
     new_vars = used['vars']
 
@@ -288,7 +316,7 @@ def read_vars(vars_file):
                     cmd = interpreter["cmd"][:]  # [:] to clone
                     cmd.append(expression)
                     try:
-                        evaluated = check_output(cmd)
+                        evaluated = check_output(cmd).decode('utf-8').strip('\n')
                     except OSError as e:  # pragma: nocover
                         print("ERROR when running the expression '%r': %s" % (
                             expression, e
@@ -318,7 +346,7 @@ def read_vars(vars_file):
                             exit(1)
                 elif interpreter["name"] == 'bash':
                     try:
-                        evaluated = check_output(expression, shell=True)
+                        evaluated = check_output(expression, shell=True).decode('utf-8').strip('\n')
                     except OSError as e:  # pragma: nocover
                         print("ERROR when running the expression '%r': %s" % (
                             expression, e
@@ -387,7 +415,7 @@ def read_vars(vars_file):
         for i in range(len(split_path)):
             update_paths.append(".".join(split_path[:i + 1]))
     update_vars(current_vars, new_vars, set(update_paths))
-    return current_vars
+    return current_vars, used
 
 
 def update_vars(current_vars, new_vars, update_paths, path=None):
