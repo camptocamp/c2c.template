@@ -282,8 +282,12 @@ def read_vars(vars_file):
                 if "cmd" in interpreter:
                     cmd = interpreter["cmd"][:]  # [:] to clone
                     cmd.append(expression)
+                    ignore_error = interpreter.get("ignore_error", False)
                     try:
-                        evaluated = check_output(cmd)
+                        with open(os.devnull, "w") as dev_null:
+                            evaluated = check_output(
+                                cmd, stderr=dev_null if ignore_error else None
+                            )
                     except OSError as e:  # pragma: nocover
                         print("ERROR when running the expression '%r': %s" % (
                             expression, e
@@ -293,10 +297,10 @@ def read_vars(vars_file):
                         error = "ERROR when running the expression '%r': %s" % (
                             expression, e
                         )
-                        print(error)
-                        if interpreter.get("ignore_error", False):
+                        if ignore_error:
                             evaluated = error
                         else:
+                            print(error)
                             exit(1)
 
                 elif interpreter["name"] == "python":
