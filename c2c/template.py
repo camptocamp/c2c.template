@@ -130,7 +130,7 @@ def main():
 
         elif isinstance(current_vars, list):
             formatteds = [
-                format_walker(var, "%s[%i]" % (path, index))
+                format_walker(var, "{0!s}[{1:d}]".format(path, index))
                 for index, var in enumerate(current_vars)
             ]
             return [v for v, s in formatteds], sum([s for v, s in formatteds])
@@ -141,7 +141,7 @@ def main():
                 if path is None:
                     current_path = key
                 else:
-                    current_path = "%s[%s]" % (path, key)
+                    current_path = "{0!s}[{1!s}]".format(path, key)
                 current_formatted = format_walker(current_vars[key], current_path)
                 current_vars[key] = current_formatted[0]
                 skip += current_formatted[1]
@@ -162,12 +162,12 @@ def main():
             corresp = (get_var.upper(), get_var)
 
         if len(corresp) != 2:  # pragma: nocover
-            print("ERROR the get variable '%s' has more than one '='." % (
+            print("ERROR the get variable '{0!s}' has more than one '='.".format((
                 get_var
-            ))
+            )))
             exit(1)
 
-        print("%s=%r" % (corresp[0], used_vars[corresp[1]]))
+        print("{0!s}={1!r}".format(corresp[0], used_vars[corresp[1]]))
 
     if options.get_config is not None:
         new_vars = {
@@ -180,7 +180,7 @@ def main():
                 if key in value:
                     value = value[key]
                 else:
-                    print("ERROR the variable '%s' don't exists." % v)
+                    print("ERROR the variable '{0!s}' don't exists.".format(v))
                     exit(1)
 
             new_vars["vars"][v] = value
@@ -196,7 +196,7 @@ def main():
             values = values[key]
 
         if not isinstance(values, list):  # pragma: nocover
-            print("ERROR the variable '%s': '%r' should be an array." % (
+            print("ERROR the variable '{0!s}': '{1!r}' should be an array.".format(
                 options.files_builder[2], values
             ))
 
@@ -246,6 +246,7 @@ def _proceed(files, used_vars, options):
             c2c_template.section = options.section
             processed = text_type(c2c_template.substitute(), "utf8")
             save(template, destination, processed)
+
 
 try:
     from z3c.recipe.filetemplate import Template
@@ -309,7 +310,7 @@ def read_vars(vars_file):
                 try:
                     item, expression = get_path(new_vars, var_name)
                 except KeyError:  # pragma: nocover
-                    print("ERROR: Expression for key not found: %s" % var_name)
+                    print("ERROR: Expression for key not found: {0!s}".format(var_name))
                     exit(1)
 
                 if "cmd" in interpreter:
@@ -322,12 +323,12 @@ def read_vars(vars_file):
                                 cmd, stderr=dev_null if ignore_error else None
                             ).decode('utf-8').strip('\n')
                     except OSError as e:  # pragma: nocover
-                        print("ERROR when running the expression '%r': %s" % (
+                        print("ERROR when running the expression '{0!r}': {1!s}".format(
                             expression, e
                         ))
                         exit(1)
                     except CalledProcessError as e:  # pragma: nocover
-                        error = "ERROR when running the expression '%r': %s" % (
+                        error = "ERROR when running the expression '{0!r}': {1!s}".format(
                             expression, e
                         )
                         if ignore_error:
@@ -340,7 +341,7 @@ def read_vars(vars_file):
                     try:
                         evaluated = eval(expression, globs)
                     except:  # pragma: nocover
-                        error = "ERROR when evaluating %r expression %r as Python:\n%s" % (
+                        error = "ERROR when evaluating {} expression {} as Python:\n{}".format(
                             var_name, expression, traceback.format_exc()
                         )
                         print(error)
@@ -352,12 +353,12 @@ def read_vars(vars_file):
                     try:
                         evaluated = check_output(expression, shell=True).decode('utf-8').strip('\n')
                     except OSError as e:  # pragma: nocover
-                        print("ERROR when running the expression '%r': %s" % (
+                        print("ERROR when running the expression '{0!r}': {1!s}".format(
                             expression, e
                         ))
                         exit(1)
                     except CalledProcessError as e:  # pragma: nocover
-                        error = "ERROR when running the expression '%r': %s" % (
+                        error = "ERROR when running the expression '{0!r}': {1!s}".format(
                             expression, e
                         )
                         print(error)
@@ -387,7 +388,7 @@ def read_vars(vars_file):
                     try:
                         evaluated = json.loads(expression)
                     except ValueError as e:  # pragma: nocover
-                        error = "ERROR when evaluating %r expression %r as JSON: %s" % (
+                        error = "ERROR when evaluating {} expression {} as JSON: {}".format(
                             key, expression, e
                         )
                         print(error)
@@ -399,7 +400,7 @@ def read_vars(vars_file):
                     try:
                         evaluated = yaml.load(expression)
                     except ParserError as e:  # pragma: nocover
-                        error = "ERROR when evaluating %r expression %r as YAML: %s" % (
+                        error = "ERROR when evaluating {} expression {} as YAML: {}".format(
                             key, expression, e
                         )
                         print(error)
@@ -425,15 +426,15 @@ def read_vars(vars_file):
 def update_vars(current_vars, new_vars, update_paths, path=None):
     for key, value in new_vars.items():
         if "." in key:  # pragma: nocover
-            print("WARNING: the key '%s' has a dot" % key)
-        key_path = key if path is None else "%s.%s" % (path, key)
+            print("WARNING: the key '{0!s}' has a dot".format(key))
+        key_path = key if path is None else "{0!s}.{1!s}".format(path, key)
         if key_path in update_paths:
             if isinstance(value, dict) and isinstance(current_vars.get(key), dict):
                 update_vars(current_vars.get(key), value, update_paths, key_path)
             elif isinstance(value, list) and isinstance(current_vars.get(key), list):
                 current_vars.get(key).extend(value)
             else:  # pragma: nocover
-                print("ERROR: Unable to update the path '%s', types '%r', '%r'." % (
+                print("ERROR: Unable to update the path '{0!s}', types '{1!r}', '{2!r}'.".format(
                     key_path, type(value), type(current_vars.get(key))
                 ))
         else:
