@@ -375,8 +375,8 @@ def read_vars(vars_file):
                             evaluated = os.environ[expression]
                         except KeyError:
                             error = \
-                                "ERROR when getting %r in environment variables, " \
-                                "possible values are: %r" % (
+                                "ERROR when getting {!r} in environment variables, " \
+                                "possible values are: {!r}".format(
                                     expression, os.environ.keys()
                                 )
                             print(error)
