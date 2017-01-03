@@ -247,6 +247,7 @@ def _proceed(files, used_vars, options):
             processed = text_type(c2c_template.substitute(), "utf8")
             save(template, destination, processed)
 
+
 try:
     from z3c.recipe.filetemplate import Template
 
@@ -322,10 +323,14 @@ def read_vars(vars_file):
                                 cmd, stderr=dev_null if ignore_error else None
                             ).decode('utf-8').strip('\n')
                     except OSError as e:  # pragma: nocover
-                        print("ERROR when running the expression '%r': %s" % (
+                        error = "ERROR when running the expression '{0!r}': {1!s}".format(
                             expression, e
-                        ))
-                        exit(1)
+                        )
+                        if ignore_error:
+                            evaluated = error
+                        else:
+                            print(error)
+                            exit(1)
                     except CalledProcessError as e:  # pragma: nocover
                         error = "ERROR when running the expression '%r': %s" % (
                             expression, e
@@ -352,10 +357,14 @@ def read_vars(vars_file):
                     try:
                         evaluated = check_output(expression, shell=True).decode('utf-8').strip('\n')
                     except OSError as e:  # pragma: nocover
-                        print("ERROR when running the expression '%r': %s" % (
+                        error = "ERROR when running the expression '{0!r}': {1!s}".format(
                             expression, e
-                        ))
-                        exit(1)
+                        )
+                        print(error)
+                        if interpreter.get("ignore_error", False):
+                            evaluated = error
+                        else:
+                            exit(1)
                     except CalledProcessError as e:  # pragma: nocover
                         error = "ERROR when running the expression '%r': %s" % (
                             expression, e
