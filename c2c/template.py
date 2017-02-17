@@ -47,7 +47,7 @@ except ImportError:  # pragma: nocover
     def check_output(cmd, cwd=None, stdin=None, stderr=None, shell=False):  # noqa
         """Backwards compatible check_output"""
         p = Popen(cmd, cwd=cwd, stdin=stdin, stderr=stderr, shell=shell, stdout=PIPE)
-        out, err = p.communicate()
+        out, _ = p.communicate()
         return out
 
 
