@@ -62,7 +62,7 @@ def dot_split(string):
 
 def get_config(file_name):
     with open(file_name) as f:
-        config = yaml.load(f.read())
+        config = yaml.safe_load(f.read())
     vars_ = config["vars"]
     for var in config.get("environment", []):
         var_path = dot_split(var)
@@ -187,7 +187,7 @@ def main():
         new_vars["environment"] = config.get("runtime_environment", [])
 
         with open(options.get_config[0], 'wb') as file_open:
-            file_open.write(yaml.dump(new_vars).encode('utf-8'))
+            file_open.write(yaml.safe_dump(new_vars).encode('utf-8'))
 
     if options.files_builder is not None:
         var_path = options.files_builder[2].split('.')
@@ -279,7 +279,7 @@ def save(template, destination, processed):
 
 def read_vars(vars_file):
     with open(vars_file, 'r') as file_open:
-        used = yaml.load(file_open.read())
+        used = yaml.safe_load(file_open.read())
 
     current_vars = {}
     if 'extends' in used:
@@ -398,7 +398,7 @@ def read_vars(vars_file):
                             exit(1)
                 elif interpreter["name"] == 'yaml':
                     try:
-                        evaluated = yaml.load(expression)
+                        evaluated = yaml.safe_load(expression)
                     except ParserError as e:  # pragma: nocover
                         error = "ERROR when evaluating {} expression {} as YAML: {}".format(
                             key, expression, e

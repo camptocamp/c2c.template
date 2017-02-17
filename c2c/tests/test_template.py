@@ -113,7 +113,7 @@ class TestTemplate(TestCase):
 
         with open('config1.yaml') as config:
             self.assertEquals(
-                yaml.load(config.read()),
+                yaml.safe_load(config.read()),
                 {
                     'vars': {
                         'var_interpreted': 4,
@@ -147,7 +147,7 @@ class TestTemplate(TestCase):
 
         with open("config3.yaml") as config:
             self.assertEquals(
-                yaml.load(config.read()),
+                yaml.safe_load(config.read()),
                 {
                     "vars": {
                         "path": {
@@ -191,7 +191,7 @@ class TestTemplate(TestCase):
 
         with open('config4.yaml') as config:
             self.assertEquals(
-                yaml.load(config.read()),
+                yaml.safe_load(config.read()),
                 {
                     'vars': {
                         'obj': {
@@ -214,7 +214,7 @@ class TestTemplate(TestCase):
 
         with open("config5.yaml") as config:
             self.assertEquals(
-                yaml.load(config.read()),
+                yaml.safe_load(config.read()),
                 {
                     'vars': {
                         "3third": "wanted"
@@ -233,7 +233,7 @@ class TestTemplate(TestCase):
 
         with open("config6.yaml") as config:
             self.assertEquals(
-                yaml.load(config.read()),
+                yaml.safe_load(config.read()),
                 {
                     'vars': {
                         "3third": "123"
