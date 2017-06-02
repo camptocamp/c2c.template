@@ -141,7 +141,7 @@ def main():
                 if path is None:
                     current_path = key
                 else:
-                    current_path = "{0!s}[{1!s}]".format(path, key)
+                    current_path = u"{0!s}[{1!s}]".format(path, key)
                 current_formatted = format_walker(current_vars[key], current_path)
                 current_vars[key] = current_formatted[0]
                 skip += current_formatted[1]
