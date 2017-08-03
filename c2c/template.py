@@ -87,6 +87,14 @@ def main():
         help="the YAML file defining the variables"
     )
     parser.add_argument(
+        '--cache',
+        help="the generated cache file"
+    )
+    parser.add_argument(
+        '--get-cache',
+        help="generate a cache file"
+    )
+    parser.add_argument(
         '--section', action='store_true',
         help="use the section (template specific)"
     )
@@ -112,49 +120,63 @@ def main():
     )
     options = parser.parse_args()
 
-    used_vars, config = read_vars(options.vars)
+    if options.cache is not None:
+        with open(options.cache, 'r') as file_open:
+            cache = yaml.safe_load(file_open.read())
+            used_vars = cache["used_vars"]
+            config = cache["config"]
+    else:
+        used_vars, config = read_vars(options.vars)
 
-    formatter = Formatter()
-    formatted = []
+        formatter = Formatter()
+        formatted = []
 
-    def format_walker(current_vars, path=None):
-        if isinstance(current_vars, string_types):
-            if path not in formatted:
-                attrs = formatter.parse(current_vars)
-                for _, attr, _, _ in attrs:
-                    if attr is not None and attr not in formatted:
-                        return current_vars, 1
+        def format_walker(current_vars, path=None):
+            if isinstance(current_vars, string_types):
+                if path not in formatted:
+                    attrs = formatter.parse(current_vars)
+                    for _, attr, _, _ in attrs:
+                        if attr is not None and attr not in formatted:
+                            return current_vars, 1
+                    formatted.append(path)
+                    return current_vars.format(**used_vars), 0
+                return current_vars, 0
+
+            elif isinstance(current_vars, list):
+                formatteds = [
+                    format_walker(var, "{0!s}[{1:d}]".format(path, index))
+                    for index, var in enumerate(current_vars)
+                ]
+                return [v for v, s in formatteds], sum([s for v, s in formatteds])
+
+            elif isinstance(current_vars, dict):
+                skip = 0
+                for key in current_vars.keys():
+                    if path is None:
+                        current_path = key
+                    else:
+                        current_path = u"{0!s}[{1!s}]".format(path, key)
+                    current_formatted = format_walker(current_vars[key], current_path)
+                    current_vars[key] = current_formatted[0]
+                    skip += current_formatted[1]
+                return current_vars, skip
+            else:
                 formatted.append(path)
-                return current_vars.format(**used_vars), 0
+
             return current_vars, 0
+        old_skip = 0
+        skip = -1
+        while old_skip != skip and skip != 0:
+            old_skip = skip
+            used_vars, skip = format_walker(used_vars)
 
-        elif isinstance(current_vars, list):
-            formatteds = [
-                format_walker(var, "{0!s}[{1:d}]".format(path, index))
-                for index, var in enumerate(current_vars)
-            ]
-            return [v for v, s in formatteds], sum([s for v, s in formatteds])
-
-        elif isinstance(current_vars, dict):
-            skip = 0
-            for key in current_vars.keys():
-                if path is None:
-                    current_path = key
-                else:
-                    current_path = u"{0!s}[{1!s}]".format(path, key)
-                current_formatted = format_walker(current_vars[key], current_path)
-                current_vars[key] = current_formatted[0]
-                skip += current_formatted[1]
-            return current_vars, skip
-        else:
-            formatted.append(path)
-
-        return current_vars, 0
-    old_skip = 0
-    skip = -1
-    while old_skip != skip and skip != 0:
-        old_skip = skip
-        used_vars, skip = format_walker(used_vars)
+    if options.get_cache is not None:
+        cache = {
+            "used_vars": used_vars,
+            "config": config,
+        }
+        with open(options.get_cache, 'wb') as file_open:
+            file_open.write(yaml.safe_dump(cache).encode('utf-8'))
 
     for get_var in options.get_vars:
         corresp = get_var.split('=')
