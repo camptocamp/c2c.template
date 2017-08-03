@@ -83,7 +83,7 @@ def main():
         help='the used template engine'
     )
     parser.add_argument(
-        '--vars', '-c', default='vars.yaml',
+        '--vars', '-c',
         help="the YAML file defining the variables"
     )
     parser.add_argument(
@@ -119,6 +119,13 @@ def main():
         metavar='ARG', help=files_builder_help
     )
     options = parser.parse_args()
+
+    if options.cache is not None and options.vars is not None:
+        print("The --vars and --cache options cannot be used together.")
+        exit(1)
+    if options.cache is None and options.vars is None:
+        print("One of the --vars or --cache options is required.")
+        exit(1)
 
     if options.cache is not None:
         with open(options.cache, 'r') as file_open:
