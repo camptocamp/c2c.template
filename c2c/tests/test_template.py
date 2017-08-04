@@ -128,6 +128,36 @@ class TestTemplate(TestCase):
                 }
             )
 
+    def test_gen_config_with_cache(self):
+        from c2c.template import main
+        sys.argv = [
+            '', '--vars', 'c2c/tests/vars.yaml', '--get-cache', 'cache.yaml',
+        ]
+        main()
+
+        sys.argv = [
+            '', '--cache', 'cache.yaml',
+            '--get-config', 'config1.yaml', 'var_interpreted', 'var1', 'obj'
+        ]
+        main()
+
+        with open('config1.yaml') as config:
+            self.assertEquals(
+                yaml.safe_load(config.read()),
+                {
+                    'vars': {
+                        'var_interpreted': 4,
+                        'var1': 'first',
+                        'obj': {
+                            'v1': 1,
+                            'v2': '2',
+                            'v3': [1, 2, 3]
+                        }
+                    },
+                    'environment': ['aa', 'bb.cc', 'dd\.ee']
+                }
+            )
+
     def test_get_config_wrong(self):
         from c2c.template import main
         sys.argv = [
