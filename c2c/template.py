@@ -129,7 +129,7 @@ def main():
 
     if options.cache is not None:
         with open(options.cache, 'r') as file_open:
-            cache = yaml.safe_load(file_open.read())
+            cache = json.loads(file_open.read())
             used_vars = cache["used_vars"]
             config = cache["config"]
     else:
@@ -183,7 +183,7 @@ def main():
             "config": config,
         }
         with open(options.get_cache, 'wb') as file_open:
-            file_open.write(yaml.safe_dump(cache).encode('utf-8'))
+            file_open.write(json.dumps(cache).encode('utf-8'))
 
     for get_var in options.get_vars:
         corresp = get_var.split('=')
