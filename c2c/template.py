@@ -70,7 +70,7 @@ def get_config(file_name):
         for key in var_path[:-1]:
             if key in value:
                 value = value[key]
-        value[var_path[-1]] = os.environ[value[var_path[-1]]]
+        value[var_path[-1]] = value[var_path[-1]].format(**os.environ)
     return vars_
 
 

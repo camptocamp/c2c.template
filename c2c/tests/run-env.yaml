@@ -1,0 +1,13 @@
+vars:
+    aa: '{{AA}}'
+    bb:
+        cc: '{{BB_CC}}'
+    dd:
+        ee: '{{DD_EE}}'
+    ff: ee{{FF}}gg
+
+runtime_environment:
+- aa
+- bb.cc
+- dd\.ee
+- ff
