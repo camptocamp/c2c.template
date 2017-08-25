@@ -1,9 +1,9 @@
 vars:
 
-    aa: AA
+    aa: '{AA}'
     bb:
-        cc: BB_CC
-    dd.ee: DD_EE
+        cc: '{BB_CC}'
+    dd.ee: '{DD_EE}'
 
 environment:
 - aa

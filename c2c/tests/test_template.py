@@ -284,3 +284,27 @@ class TestTemplate(TestCase):
         self.assertEquals(config['aa'], '11')
         self.assertEquals(config['bb']['cc'], '22_33')
         self.assertEquals(config['dd.ee'], '44_55')
+
+    def test_runtime_environment(self):
+        import c2c.template
+        sys.argv = [
+            '', '--vars', 'c2c/tests/run-env.yaml',
+            '--get-config', 'config-env.yaml', 'aa', 'bb', 'dd.ee', 'ff'
+        ]
+        c2c.template.main()
+
+        os.environ['AA'] = '11'
+        os.environ['BB_CC'] = '22_33'
+        os.environ['DD__EE'] = '44_55'
+        os.environ['FF'] = '66'
+        result = c2c.template.get_config('config-env.yaml')
+
+        self.assertEquals(
+            result,
+            {
+                'aa': '11',
+                'bb': {'cc': '22_33'},
+                'dd.ee': '44_55',
+                'ff': 'ee66gg',
+            }
+        )
