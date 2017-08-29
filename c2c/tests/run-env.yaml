@@ -5,9 +5,17 @@ vars:
     dd:
         ee: '{{DD_EE}}'
     ff: ee{{FF}}gg
+    gg:
+    - name: ee{{GG}}gg
+    - name: hh{{GG}}ii
+    hh:
+    - ee{{HH}}gg
+    - hh{{HH}}ii
 
 runtime_environment:
 - aa
 - bb.cc
 - dd\.ee
 - ff
+- gg.[].name
+- hh.[]

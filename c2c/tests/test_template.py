@@ -289,7 +289,7 @@ class TestTemplate(TestCase):
         import c2c.template
         sys.argv = [
             '', '--vars', 'c2c/tests/run-env.yaml',
-            '--get-config', 'config-env.yaml', 'aa', 'bb', 'dd.ee', 'ff'
+            '--get-config', 'config-env.yaml', 'aa', 'bb', 'dd.ee', 'ff', 'gg', 'hh'
         ]
         c2c.template.main()
 
@@ -297,6 +297,8 @@ class TestTemplate(TestCase):
         os.environ['BB_CC'] = '22_33'
         os.environ['DD__EE'] = '44_55'
         os.environ['FF'] = '66'
+        os.environ['GG'] = '77'
+        os.environ['HH'] = '88'
         result = c2c.template.get_config('config-env.yaml')
 
         self.assertEquals(
@@ -306,5 +308,7 @@ class TestTemplate(TestCase):
                 'bb': {'cc': '22_33'},
                 'dd.ee': '44_55',
                 'ff': 'ee66gg',
+                'gg': [{'name': 'ee77gg'}, {'name': 'hh77ii'}],
+                'hh': ['ee88gg', 'hh88ii'],
             }
         )
