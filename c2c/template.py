@@ -60,17 +60,30 @@ def dot_split(string):
     return [ESCAPE_DOT_RE.sub('.', i) for i in result if i != ""]
 
 
+def transform_path(value, path, action):
+    assert len(path) > 0
+    key = path[0]
+    if isinstance(value, list) and key == '[]':
+        if len(path) == 1:
+            for i, v in enumerate(value):
+                value[i] = action(v)
+        else:
+            for v in value:
+                transform_path(v, path[1:], action)
+    else:
+        if len(path) == 1:
+            value[key] = action(value[key])
+        else:
+            transform_path(value[key], path[1:], action)
+
+
 def get_config(file_name):
     with open(file_name) as f:
         config = yaml.safe_load(f.read())
     vars_ = config["vars"]
     for var in config.get("environment", []):
         var_path = dot_split(var)
-        value = vars_
-        for key in var_path[:-1]:
-            if key in value:
-                value = value[key]
-        value[var_path[-1]] = value[var_path[-1]].format(**os.environ)
+        transform_path(vars_, var_path, lambda v: v.format(**os.environ))
     return vars_
 
 
@@ -243,7 +256,7 @@ def main():
 
 
 def get_path(value, path):
-    split_path = path.split(".")
+    split_path = dot_split(path)
     parent = None
     for element in split_path:
         parent = value
@@ -336,112 +349,117 @@ def read_vars(vars_file):
 
         for interpreter in interpreters:
             for var_name in interpreter["vars"]:
-                try:
-                    item, expression = get_path(new_vars, var_name)
-                except KeyError:  # pragma: nocover
-                    print("ERROR: Expression for key not found: {0!s}".format(var_name))
-                    exit(1)
-
                 if "cmd" in interpreter:
-                    cmd = interpreter["cmd"][:]  # [:] to clone
-                    cmd.append(expression)
                     ignore_error = interpreter.get("ignore_error", False)
-                    try:
-                        with open(os.devnull, "w") as dev_null:
-                            evaluated = check_output(
-                                cmd, stderr=dev_null if ignore_error else None
-                            ).decode('utf-8').strip('\n')
-                    except OSError as e:  # pragma: nocover
-                        print("ERROR when running the expression '{0!r}': {1!s}".format(
-                            expression, e
-                        ))
-                        exit(1)
-                    except CalledProcessError as e:  # pragma: nocover
-                        error = "ERROR when running the expression '{0!r}': {1!s}".format(
-                            expression, e
-                        )
-                        if ignore_error:
-                            evaluated = error
-                        else:
-                            print(error)
+
+                    def action(expression):
+                        cmd = interpreter["cmd"][:]  # [:] to clone
+                        cmd.append(expression)
+                        try:
+                            with open(os.devnull, "w") as dev_null:
+                                return check_output(
+                                    cmd, stderr=dev_null if ignore_error else None
+                                ).decode('utf-8').strip('\n')
+                        except OSError as e:  # pragma: nocover
+                            print("ERROR when running the expression '{0!r}': {1!s}".format(
+                                expression, e
+                            ))
                             exit(1)
+                        except CalledProcessError as e:  # pragma: nocover
+                            error = "ERROR when running the expression '{0!r}': {1!s}".format(
+                                expression, e
+                            )
+                            if ignore_error:
+                                return error
+                            else:
+                                print(error)
+                                exit(1)
 
                 elif interpreter["name"] == "python":
-                    try:
-                        evaluated = eval(expression, globs)
-                    except:  # pragma: nocover
-                        error = "ERROR when evaluating {} expression {} as Python:\n{}".format(
-                            var_name, expression, traceback.format_exc()
-                        )
-                        print(error)
-                        if interpreter.get("ignore_error", False):
-                            evaluated = error
-                        else:
-                            exit(1)
-                elif interpreter["name"] == 'bash':
-                    try:
-                        evaluated = check_output(expression, shell=True).decode('utf-8').strip('\n')
-                    except OSError as e:  # pragma: nocover
-                        print("ERROR when running the expression '{0!r}': {1!s}".format(
-                            expression, e
-                        ))
-                        exit(1)
-                    except CalledProcessError as e:  # pragma: nocover
-                        error = "ERROR when running the expression '{0!r}': {1!s}".format(
-                            expression, e
-                        )
-                        print(error)
-                        if interpreter.get("ignore_error", False):
-                            evaluated = error
-                        else:
-                            exit(1)
-
-                elif interpreter["name"] == 'environment':  # pragma: nocover
-                    if expression is None:
-                        evaluated = os.environ
-                    else:
+                    def action(expression):
                         try:
-                            evaluated = os.environ[expression]
-                        except KeyError:
-                            error = \
-                                "ERROR when getting {!r} in environment variables, " \
-                                "possible values are: {!r}".format(
-                                    expression, os.environ.keys()
-                                )
+                            return eval(expression, globs)
+                        except:  # pragma: nocover
+                            error = "ERROR when evaluating {} expression {} as Python:\n{}".format(
+                                var_name, expression, traceback.format_exc()
+                            )
                             print(error)
                             if interpreter.get("ignore_error", False):
-                                evaluated = error
+                                return error
                             else:
                                 exit(1)
+                elif interpreter["name"] == 'bash':
+                    def action(expression):
+                        try:
+                            return check_output(expression, shell=True).decode('utf-8').strip('\n')
+                        except OSError as e:  # pragma: nocover
+                            print("ERROR when running the expression '{0!r}': {1!s}".format(
+                                expression, e
+                            ))
+                            exit(1)
+                        except CalledProcessError as e:  # pragma: nocover
+                            error = "ERROR when running the expression '{0!r}': {1!s}".format(
+                                expression, e
+                            )
+                            print(error)
+                            if interpreter.get("ignore_error", False):
+                                return error
+                            else:
+                                exit(1)
+
+                elif interpreter["name"] == 'environment':  # pragma: nocover
+                    def action(value):
+                        if value is None:
+                            return os.environ
+                        else:
+                            try:
+                                return os.environ[value]
+                            except KeyError:
+                                error = \
+                                    "ERROR when getting {!r} in environment variables, " \
+                                    "possible values are: {!r}".format(
+                                        value, os.environ.keys()
+                                    )
+                                print(error)
+                                if interpreter.get("ignore_error", False):
+                                    return error
+                                else:
+                                    exit(1)
                 elif interpreter["name"] == 'json':
-                    try:
-                        evaluated = json.loads(expression)
-                    except ValueError as e:  # pragma: nocover
-                        error = "ERROR when evaluating {} expression {} as JSON: {}".format(
-                            key, expression, e
-                        )
-                        print(error)
-                        if interpreter.get("ignore_error", False):
-                            evaluated = error
-                        else:
-                            exit(1)
+                    def action(value):
+                        try:
+                            return json.loads(value)
+                        except ValueError as e:  # pragma: nocover
+                            error = "ERROR when evaluating {} expression {} as JSON: {}".format(
+                                key, value, e
+                            )
+                            print(error)
+                            if interpreter.get("ignore_error", False):
+                                return error
+                            else:
+                                exit(1)
                 elif interpreter["name"] == 'yaml':
-                    try:
-                        evaluated = yaml.safe_load(expression)
-                    except ParserError as e:  # pragma: nocover
-                        error = "ERROR when evaluating {} expression {} as YAML: {}".format(
-                            key, expression, e
-                        )
-                        print(error)
-                        if interpreter.get("ignore_error", False):
-                            evaluated = error
-                        else:
-                            exit(1)
+                    def action(value):
+                        try:
+                            return yaml.safe_load(value)
+                        except ParserError as e:  # pragma: nocover
+                            error = "ERROR when evaluating {} expression {} as YAML: {}".format(
+                                key, value, e
+                            )
+                            print(error)
+                            if interpreter.get("ignore_error", False):
+                                return error
+                            else:
+                                exit(1)
                 else:  # pragma: nocover
                     print("Unknown interpreter name '{}'.".format(interpreter["name"]))
                     exit(1)
 
-                set_path(item, evaluated)
+                try:
+                    transform_path(new_vars, dot_split(var_name), action)
+                except KeyError:  # pragma: nocover
+                    print("ERROR: Expression for key not found: {0!s}".format(var_name))
+                    exit(1)
 
     update_paths = []
     for update_path in used.get("update_paths", []):
