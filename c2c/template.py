@@ -38,7 +38,7 @@ from yaml.parser import ParserError
 from argparse import ArgumentParser
 from string import Formatter
 from subprocess import CalledProcessError
-from six import string_types, text_type
+from six import string_types
 try:
     from subprocess import check_output
 except ImportError:  # pragma: nocover
@@ -92,7 +92,7 @@ def main():
         description='Used to run a template'
     )
     parser.add_argument(
-        '--engine', '-e', choices=['jinja', 'mako', 'template'], default='jinja',
+        '--engine', '-e', choices=['jinja', 'mako'], default='jinja',
         help='the used template engine'
     )
     parser.add_argument(
@@ -277,32 +277,6 @@ def _proceed(files, used_vars, options):
     elif options.engine == 'mako':
         from bottle import mako_template as engine
         bottle_template(files, used_vars, engine)
-
-    elif options.engine == 'template':  # pragma: nocover
-        for template, destination in files:
-            c2c_template = C2cTemplate(
-                template,
-                template,
-                used_vars
-            )
-            c2c_template.section = options.section
-            processed = text_type(c2c_template.substitute(), "utf8")
-            save(template, destination, processed)
-
-
-try:
-    from z3c.recipe.filetemplate import Template
-
-    class C2cTemplate(Template):  # pragma: nocover
-        def _get(self, section, option, start):
-            if self.section and section is not None:
-                return self.recipe[section][option]
-            else:
-                return self.recipe[option]
-except ImportError:
-    class C2cTemplate:
-        def __init__(self, *args):  # pragma: nocover
-            raise Exception("The egg 'z3c.recipe.filetemplate' is missing.")
 
 
 def bottle_template(files, used_vars, engine):

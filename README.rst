@@ -5,9 +5,8 @@ Supported template Jinja, Mako, Template.
 
 Tools that collect some vars and get them to a template engine.
 
-Supported template: `Jinja <http://jinja.pocoo.org/>`_,
-`Mako <http://www.makotemplates.org/>`_ and
-`Template <https://pypi.python.org/pypi/z3c.recipe.filetemplate>`_.
+Supported template: `Jinja <http://jinja.pocoo.org/>`_ and
+`Mako <http://www.makotemplates.org/>`_.
 
 Use ``c2c-template --help`` to get the command line help.
 

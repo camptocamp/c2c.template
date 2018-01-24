@@ -33,7 +33,6 @@ import sys
 import yaml
 from six import StringIO
 from unittest import TestCase
-from nose.plugins.attrib import attr
 
 
 class TestTemplate(TestCase):
@@ -71,22 +70,6 @@ class TestTemplate(TestCase):
             'var1: first, var2: second\n'
             'var3: first, second, third\n'
             'var_interpreted: 4\n'
-        )
-
-    @attr(template=True)
-    def test_template(self):  # pragma: nocover
-        from c2c.template import main
-        sys.argv = [
-            '', '--engine', 'template', '--vars', 'c2c/tests/vars.yaml',
-            '--files', 'c2c/tests/template.in'
-        ]
-        main()
-
-        self.assertEquals(
-            open('c2c/tests/template', 'r').read(),
-            'var1: first, var2: second'
-            'var3: first, second, third'
-            'var_interpreted: 4'
         )
 
     def test_get_var(self):
