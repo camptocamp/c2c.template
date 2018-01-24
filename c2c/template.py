@@ -353,7 +353,7 @@ def read_vars(vars_file):
                     def action(expression):
                         try:
                             return eval(expression, globs)
-                        except:  # pragma: nocover
+                        except Exception:  # pragma: nocover
                             error = "ERROR when evaluating {} expression {} as Python:\n{}".format(
                                 var_name, expression, traceback.format_exc()
                             )
