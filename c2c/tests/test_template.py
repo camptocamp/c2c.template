@@ -35,6 +35,18 @@ from six import StringIO
 from unittest import TestCase
 
 
+class Options:
+    engine = 'jinja'
+    vars = None
+    cache = None
+    get_cache = None
+    section = False
+    files = None
+    get_vars = []
+    get_config = None
+    files_builder = None
+
+
 class TestTemplate(TestCase):
 
     maxDiff = None
@@ -107,7 +119,7 @@ class TestTemplate(TestCase):
                             'v3': [1, 2, 3]
                         }
                     },
-                    'environment': ['aa', 'bb.cc', 'dd\.ee']
+                    'environment': []
                 }
             )
 
@@ -137,7 +149,7 @@ class TestTemplate(TestCase):
                             'v3': [1, 2, 3]
                         }
                     },
-                    'environment': ['aa', 'bb.cc', 'dd\.ee']
+                    'environment': []
                 }
             )
 
@@ -268,11 +280,30 @@ class TestTemplate(TestCase):
         self.assertEquals(config['bb']['cc'], '22_33')
         self.assertEquals(config['dd.ee'], '44_55')
 
+    def test_loop(self):
+        from c2c.template import do
+
+        os.environ['AA'] = '11'
+
+        opt = Options()
+        opt.vars = 'c2c/tests/loop.yaml'
+        opt.get_cache = 'loop.cache.yaml'
+
+        do(opt)
+
+        with open('loop.cache.yaml') as f:
+            cache = yaml.safe_load(f.read())
+
+        print(cache)
+        self.assertEquals(cache['used_vars']['aa'], '11')
+        self.assertEquals(cache['used_vars']['bb'], '11')
+        self.assertEquals(cache['used_vars']['cc'], '11 11')
+
     def test_runtime_environment(self):
         import c2c.template
         sys.argv = [
             '', '--vars', 'c2c/tests/run-env.yaml',
-            '--get-config', 'config-env.yaml', 'aa', 'bb', 'dd.ee', 'ff', 'gg', 'hh'
+            '--get-config', 'config-env.yaml', 'aa', 'bb', 'dd.ee', 'ff', 'gg', 'hh', 'ii'
         ]
         c2c.template.main()
 
@@ -293,5 +324,41 @@ class TestTemplate(TestCase):
                 'ff': 'ee66gg',
                 'gg': [{'name': 'ee77gg'}, {'name': 'hh77ii'}],
                 'hh': ['ee88gg', 'hh88ii'],
+                'ii': '11 11 11',
+            }
+        )
+
+    def test_runtime_environment_with_cache(self):
+        import c2c.template
+        sys.argv = [
+            '', '--vars', 'c2c/tests/run-env.yaml',
+            '--get-cache', 'cache.yaml',
+        ]
+        c2c.template.main()
+
+        sys.argv = [
+            '', '--cache', 'cache.yaml',
+            '--get-config', 'config-env.yaml', 'aa', 'bb', 'dd.ee', 'ff', 'gg', 'hh', 'ii'
+        ]
+        c2c.template.main()
+
+        os.environ['AA'] = '11'
+        os.environ['BB_CC'] = '22_33'
+        os.environ['DD__EE'] = '44_55'
+        os.environ['FF'] = '66'
+        os.environ['GG'] = '77'
+        os.environ['HH'] = '88'
+        result = c2c.template.get_config('config-env.yaml')
+
+        self.assertEquals(
+            result,
+            {
+                'aa': '11',
+                'bb': {'cc': '22_33'},
+                'dd.ee': '44_55',
+                'ff': 'ee66gg',
+                'gg': [{'name': 'ee77gg'}, {'name': 'hh77ii'}],
+                'hh': ['ee88gg', 'hh88ii'],
+                'ii': '11 11 11',
             }
         )

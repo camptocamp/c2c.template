@@ -1,21 +1,22 @@
 vars:
-    aa: '{{AA}}'
+    aa: '{AA}'
     bb:
-        cc: '{{BB_CC}}'
+        cc: '{BB_CC}'
     dd:
-        ee: '{{DD_EE}}'
-    ff: ee{{FF}}gg
+        ee: '{DD_EE}'
+    ff: ee{FF}gg
     gg:
-    - name: ee{{GG}}gg
-    - name: hh{{GG}}ii
+    - name: ee{GG}gg
+    - name: hh{GG}ii
     hh:
-    - ee{{HH}}gg
-    - hh{{HH}}ii
+    - ee{HH}gg
+    - hh{HH}ii
+    ii: '11 {aa} 11'
 
 runtime_environment:
-- aa
-- bb.cc
-- dd\.ee
-- ff
-- gg.[].name
-- hh.[]
+- AA
+- BB_CC
+- DD_EE
+- FF
+- GG
+- HH

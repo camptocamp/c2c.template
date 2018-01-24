@@ -1,0 +1,8 @@
+vars:
+
+    aa: '{AA}'
+    bb: '{aa}'
+    cc: '{aa} {bb}'
+
+environment:
+- AA
