@@ -6,6 +6,6 @@ vars:
     dd.ee: '{DD_EE}'
 
 environment:
-- aa
-- bb.cc
-- dd\.ee
+- AA
+- BB_CC
+- DD_EE

@@ -34,11 +34,12 @@ import traceback
 import re
 import json
 import yaml
+import itertools
 from yaml.parser import ParserError
 from argparse import ArgumentParser
 from string import Formatter
 from subprocess import CalledProcessError
-from six import string_types, text_type
+from six import string_types
 try:
     from subprocess import check_output
 except ImportError:  # pragma: nocover
@@ -80,11 +81,12 @@ def transform_path(value, path, action):
 def get_config(file_name):
     with open(file_name) as f:
         config = yaml.safe_load(f.read())
-    vars_ = config["vars"]
-    for var in config.get("environment", []):
-        var_path = dot_split(var)
-        transform_path(vars_, var_path, lambda v: v.format(**os.environ))
-    return vars_
+    format_walker = FormatWalker(
+        config["vars"],
+        config.get("environment", [])
+    )
+    format_walker()
+    return format_walker.used_vars
 
 
 def main():
@@ -92,7 +94,7 @@ def main():
         description='Used to run a template'
     )
     parser.add_argument(
-        '--engine', '-e', choices=['jinja', 'mako', 'template'], default='jinja',
+        '--engine', '-e', choices=['jinja', 'mako'], default='jinja',
         help='the used template engine'
     )
     parser.add_argument(
@@ -132,7 +134,83 @@ def main():
         metavar='ARG', help=files_builder_help
     )
     options = parser.parse_args()
+    do(options)
 
+
+class FormatWalker:
+    formatter = Formatter()
+
+    def __init__(self, used_vars, environment, runtime_environment=None):
+        self.formatted = []
+        self.used_vars = used_vars
+        self.environment = environment
+        self.runtime_environment = runtime_environment
+
+        if runtime_environment is None:
+            runtime_environment = []
+
+        self.all_environment_dict = {}
+        for env in environment:
+            self.all_environment_dict[env] = os.environ[env]
+        for env in runtime_environment:
+            self.all_environment_dict[env] = '{' + env + '}'
+
+    def format_walker(self, current_vars, path=None):
+        if isinstance(current_vars, string_types):
+            if path not in self.formatted:
+                attrs = self.formatter.parse(current_vars)
+                for _, attr, _, _ in attrs:
+                    if attr is not None \
+                            and attr not in self.formatted \
+                            and attr not in self.environment \
+                            and attr not in self.runtime_environment:
+                        return current_vars, [[path, attr]]
+                self.formatted.append(path)
+                vars_ = {}
+                vars_.update(self.all_environment_dict)
+                vars_.update(self.used_vars)
+                return current_vars.format(**vars_), []
+            return current_vars, []
+
+        elif isinstance(current_vars, list):
+            formatteds = [
+                self.format_walker(var, "{}[{}]".format(path, index))
+                for index, var in enumerate(current_vars)
+            ]
+            return [v for v, s in formatteds], list(itertools.chain(*[s for v, s in formatteds]))
+
+        elif isinstance(current_vars, dict):
+            skip = []
+            for key in current_vars.keys():
+                if path is None:
+                    current_path = key
+                else:
+                    current_path = u"{}[{}]".format(path, key)
+                current_formatted = self.format_walker(current_vars[key], current_path)
+                current_vars[key] = current_formatted[0]
+                skip += current_formatted[1]
+            return current_vars, skip
+        else:
+            self.formatted.append(path)
+
+        return current_vars, []
+
+    def __call__(self):
+        skip = None
+        old_skip = sys.maxsize
+        while skip is None or old_skip != len(skip) and len(skip) != 0:
+            old_skip = sys.maxsize if skip is None else len(skip)
+            self.used_vars, skip = self.format_walker(self.used_vars)
+
+        if len(skip) > 0:
+            print(
+                "The following variable isn't correctly interpreted due missing dependency:\n" +
+                "\n".join(["'{}' depend on '{}'.".format(*e) for e in skip])
+            )
+            sys.exit(1)
+
+
+def do(options):
     if options.cache is not None and options.vars is not None:
         print("The --vars and --cache options cannot be used together.")
         exit(1)
@@ -148,47 +226,13 @@ def main():
     else:
         used_vars, config = read_vars(options.vars)
 
-        formatter = Formatter()
-        formatted = []
-
-        def format_walker(current_vars, path=None):
-            if isinstance(current_vars, string_types):
-                if path not in formatted:
-                    attrs = formatter.parse(current_vars)
-                    for _, attr, _, _ in attrs:
-                        if attr is not None and attr not in formatted:
-                            return current_vars, 1
-                    formatted.append(path)
-                    return current_vars.format(**used_vars), 0
-                return current_vars, 0
-
-            elif isinstance(current_vars, list):
-                formatteds = [
-                    format_walker(var, "{0!s}[{1:d}]".format(path, index))
-                    for index, var in enumerate(current_vars)
-                ]
-                return [v for v, s in formatteds], sum([s for v, s in formatteds])
-
-            elif isinstance(current_vars, dict):
-                skip = 0
-                for key in current_vars.keys():
-                    if path is None:
-                        current_path = key
-                    else:
-                        current_path = u"{0!s}[{1!s}]".format(path, key)
-                    current_formatted = format_walker(current_vars[key], current_path)
-                    current_vars[key] = current_formatted[0]
-                    skip += current_formatted[1]
-                return current_vars, skip
-            else:
-                formatted.append(path)
-
-            return current_vars, 0
-        old_skip = 0
-        skip = -1
-        while old_skip != skip and skip != 0:
-            old_skip = skip
-            used_vars, skip = format_walker(used_vars)
+        format_walker = FormatWalker(
+            used_vars,
+            config.get("environment", []),
+            config.get("runtime_environment", [])
+        )
+        format_walker()
+        used_vars = format_walker.used_vars
 
     if options.get_cache is not None:
         cache = {
@@ -278,32 +322,6 @@ def _proceed(files, used_vars, options):
         from bottle import mako_template as engine
         bottle_template(files, used_vars, engine)
 
-    elif options.engine == 'template':  # pragma: nocover
-        for template, destination in files:
-            c2c_template = C2cTemplate(
-                template,
-                template,
-                used_vars
-            )
-            c2c_template.section = options.section
-            processed = text_type(c2c_template.substitute(), "utf8")
-            save(template, destination, processed)
-
-
-try:
-    from z3c.recipe.filetemplate import Template
-
-    class C2cTemplate(Template):  # pragma: nocover
-        def _get(self, section, option, start):
-            if self.section and section is not None:
-                return self.recipe[section][option]
-            else:
-                return self.recipe[option]
-except ImportError:
-    class C2cTemplate:
-        def __init__(self, *args):  # pragma: nocover
-            raise Exception("The egg 'z3c.recipe.filetemplate' is missing.")
-
 
 def bottle_template(files, used_vars, engine):
     for template, destination in files:
@@ -379,7 +397,7 @@ def read_vars(vars_file):
                     def action(expression):
                         try:
                             return eval(expression, globs)
-                        except:  # pragma: nocover
+                        except Exception:  # pragma: nocover
                             error = "ERROR when evaluating {} expression {} as Python:\n{}".format(
                                 var_name, expression, traceback.format_exc()
                             )
@@ -407,24 +425,6 @@ def read_vars(vars_file):
                             else:
                                 exit(1)
 
-                elif interpreter["name"] == 'environment':  # pragma: nocover
-                    def action(value):
-                        if value is None:
-                            return os.environ
-                        else:
-                            try:
-                                return os.environ[value]
-                            except KeyError:
-                                error = \
-                                    "ERROR when getting {!r} in environment variables, " \
-                                    "possible values are: {!r}".format(
-                                        value, os.environ.keys()
-                                    )
-                                print(error)
-                                if interpreter.get("ignore_error", False):
-                                    return error
-                                else:
-                                    exit(1)
                 elif interpreter["name"] == 'json':
                     def action(value):
                         try:

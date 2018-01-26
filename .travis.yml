@@ -13,7 +13,7 @@ install:
 script: 
 - flake8 --version
 - flake8 c2c --max-line-length=100
-- python setup.py nosetests -a '!template'
+- python setup.py nosetests
 
 after_success:
 - pip install coveralls
