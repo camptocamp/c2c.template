@@ -31,7 +31,7 @@
 import os
 import sys
 import yaml
-from six import StringIO
+from io import StringIO
 from unittest import TestCase
 
 
