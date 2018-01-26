@@ -341,9 +341,26 @@ def read_vars(vars_file):
     with open(vars_file, 'r') as file_open:
         used = yaml.safe_load(file_open.read())
 
+    if 'environment' not in used:
+        used['environment'] = []
+    if 'runtime_environment' not in used:
+        used['runtime_environment'] = []
+
     current_vars = {}
     if 'extends' in used:
-        current_vars, _ = read_vars(used['extends'])
+        current_vars, config = read_vars(used['extends'])
+        environment = config['environment']
+        runtime_environment = config['runtime_environment']
+        for e in used['runtime_environment']:
+            if e in environment:
+                environment.remove(e)
+            runtime_environment.append(e)
+        for e in used['environment']:
+            if e in runtime_environment:
+                runtime_environment.remove(e)
+            environment.append(e)
+        used['environment'] = environment
+        used['runtime_environment'] = runtime_environment
 
     new_vars = used['vars']
 
