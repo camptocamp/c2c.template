@@ -1,8 +1,7 @@
 language: python
 python:
-- 2.7
-- 3.3
-- 3.4
+- 3.5
+- 3.6
 
 sudo: false
 
@@ -32,5 +31,5 @@ deploy:
   distributions: sdist bdist_wheel
   on:
     tags: true
-    python: 3.4
+    python: 3.6
     condition: '"${TRAVIS_TAG}" == "`python setup.py --version`"'

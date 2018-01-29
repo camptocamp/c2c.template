@@ -39,7 +39,6 @@ from yaml.parser import ParserError
 from argparse import ArgumentParser
 from string import Formatter
 from subprocess import CalledProcessError
-from six import string_types
 try:
     from subprocess import check_output
 except ImportError:  # pragma: nocover
@@ -156,7 +155,7 @@ class FormatWalker:
             self.all_environment_dict[env] = '{' + env + '}'
 
     def format_walker(self, current_vars, path=None):
-        if isinstance(current_vars, string_types):
+        if isinstance(current_vars, str):
             if path not in self.formatted:
                 attrs = self.formatter.parse(current_vars)
                 for _, attr, _, _ in attrs:
@@ -253,7 +252,7 @@ def do(options):
             )))
             exit(1)
 
-        print("{0!s}={1!r}".format(corresp[0], used_vars[corresp[1]]))
+        print("{}={!r}".format(corresp[0], used_vars[corresp[1]]))
 
     if options.get_config is not None:
         new_vars = {
