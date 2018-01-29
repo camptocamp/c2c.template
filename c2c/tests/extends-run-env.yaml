@@ -1,0 +1,9 @@
+extends: c2c/tests/run-env.yaml
+
+vars: {}
+
+environment:
+- AA
+- FF
+- GG
+- HH

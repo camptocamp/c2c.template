@@ -328,6 +328,56 @@ class TestTemplate(TestCase):
             }
         )
 
+    def test_extends_runtime_environment(self):
+        import c2c.template
+        os.environ['AA'] = '11'
+        os.environ['FF'] = '66'
+        os.environ['GG'] = '77'
+        os.environ['HH'] = '88'
+        sys.argv = [
+            '', '--vars', 'c2c/tests/extends-run-env.yaml',
+            '--get-config', 'config-env.yaml', 'aa', 'bb', 'dd.ee', 'ff', 'gg', 'hh', 'ii'
+        ]
+        c2c.template.main()
+        del os.environ['AA']
+        del os.environ['FF']
+        del os.environ['GG']
+        del os.environ['HH']
+
+        with open("config-env.yaml") as config:
+            self.assertEquals(
+                yaml.safe_load(config.read()),
+                {
+                    'vars': {
+                        'aa': '11',
+                        'bb': {'cc': '{BB_CC}'},
+                        'dd.ee': '{DD_EE}',
+                        'ff': 'ee66gg',
+                        'gg': [{'name': 'ee77gg'}, {'name': 'hh77ii'}],
+                        'hh': ['ee88gg', 'hh88ii'],
+                        'ii': '11 11 11',
+                    },
+                    'environment': ['BB_CC', 'DD_EE']
+                }
+            )
+
+        os.environ['BB_CC'] = '22_33'
+        os.environ['DD_EE'] = '44_55'
+        result = c2c.template.get_config('config-env.yaml')
+
+        self.assertEquals(
+            result,
+            {
+                'aa': '11',
+                'bb': {'cc': '22_33'},
+                'dd.ee': '44_55',
+                'ff': 'ee66gg',
+                'gg': [{'name': 'ee77gg'}, {'name': 'hh77ii'}],
+                'hh': ['ee88gg', 'hh88ii'],
+                'ii': '11 11 11',
+            }
+        )
+
     def test_runtime_environment_with_cache(self):
         import c2c.template
         sys.argv = [
