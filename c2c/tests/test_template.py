@@ -119,7 +119,8 @@ class TestTemplate(TestCase):
                             'v3': [1, 2, 3]
                         }
                     },
-                    'environment': []
+                    'no_interpreted': [],
+                    'environment': [],
                 }
             )
 
@@ -149,7 +150,8 @@ class TestTemplate(TestCase):
                             'v3': [1, 2, 3]
                         }
                     },
-                    'environment': []
+                    'no_interpreted': [],
+                    'environment': [],
                 }
             )
 
@@ -182,7 +184,8 @@ class TestTemplate(TestCase):
                             "pi": "3.14"
                         }
                     },
-                    'environment': []
+                    'no_interpreted': [],
+                    'environment': [],
                 }
             )
 
@@ -225,7 +228,8 @@ class TestTemplate(TestCase):
                             'v3': [1, 2, 3, 3, 4, 5]
                         }
                     },
-                    'environment': []
+                    'no_interpreted': [],
+                    'environment': [],
                 }
             )
 
@@ -244,7 +248,8 @@ class TestTemplate(TestCase):
                     'vars': {
                         "3third": "wanted"
                     },
-                    'environment': []
+                    'no_interpreted': [],
+                    'environment': [],
                 }
             )
 
@@ -263,7 +268,8 @@ class TestTemplate(TestCase):
                     'vars': {
                         "3third": "123"
                     },
-                    'environment': []
+                    'no_interpreted': [],
+                    'environment': [],
                 }
             )
 
@@ -294,7 +300,6 @@ class TestTemplate(TestCase):
         with open('loop.cache.yaml') as f:
             cache = yaml.safe_load(f.read())
 
-        print(cache)
         self.assertEquals(cache['used_vars']['aa'], '11')
         self.assertEquals(cache['used_vars']['bb'], '11')
         self.assertEquals(cache['used_vars']['cc'], '11 11')
@@ -357,7 +362,8 @@ class TestTemplate(TestCase):
                         'hh': ['ee88gg', 'hh88ii'],
                         'ii': '11 11 11',
                     },
-                    'environment': ['BB_CC', 'DD_EE']
+                    'no_interpreted': [],
+                    'environment': ['BB_CC', 'DD_EE'],
                 }
             )
 
@@ -410,5 +416,28 @@ class TestTemplate(TestCase):
                 'gg': [{'name': 'ee77gg'}, {'name': 'hh77ii'}],
                 'hh': ['ee88gg', 'hh88ii'],
                 'ii': '11 11 11',
+            }
+        )
+
+    def test_no_interpreted(self):
+        import c2c.template
+        sys.argv = [
+            '', '--vars', 'c2c/tests/no_interpreted.yaml',
+            '--get-cache', 'cache.yaml',
+        ]
+        c2c.template.main()
+
+        sys.argv = [
+            '', '--cache', 'cache.yaml',
+            '--get-config', 'config.yaml', 'var'
+        ]
+        c2c.template.main()
+
+        result = c2c.template.get_config('config.yaml')
+
+        self.assertEquals(
+            result,
+            {
+                'var': '{test}',
             }
         )
