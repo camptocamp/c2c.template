@@ -82,6 +82,7 @@ def get_config(file_name):
         config = yaml.safe_load(f.read())
     format_walker = FormatWalker(
         config["vars"],
+        config.get("no_interpreted", []),
         config.get("environment", [])
     )
     format_walker()
@@ -139,9 +140,10 @@ def main():
 class FormatWalker:
     formatter = Formatter()
 
-    def __init__(self, used_vars, environment, runtime_environment=None):
+    def __init__(self, used_vars, no_interpreted, environment, runtime_environment=None):
         self.formatted = []
         self.used_vars = used_vars
+        self.no_interpreted = no_interpreted
         self.environment = environment
         self.runtime_environment = runtime_environment
 
@@ -157,6 +159,9 @@ class FormatWalker:
     def format_walker(self, current_vars, path=None):
         if isinstance(current_vars, str):
             if path not in self.formatted:
+                if path in self.no_interpreted:
+                    self.formatted.append(path)
+                    return current_vars, []
                 attrs = self.formatter.parse(current_vars)
                 for _, attr, _, _ in attrs:
                     if attr is not None \
@@ -227,6 +232,7 @@ def do(options):
 
         format_walker = FormatWalker(
             used_vars,
+            config.get("no_interpreted", []),
             config.get("environment", []),
             config.get("runtime_environment", [])
         )
@@ -270,6 +276,7 @@ def do(options):
 
             new_vars["vars"][v] = value
         new_vars["environment"] = config.get("runtime_environment", [])
+        new_vars["no_interpreted"] = config.get("no_interpreted", [])
 
         with open(options.get_config[0], 'wb') as file_open:
             file_open.write(yaml.safe_dump(new_vars).encode('utf-8'))
@@ -348,6 +355,12 @@ def read_vars(vars_file):
     current_vars = {}
     if 'extends' in used:
         current_vars, config = read_vars(used['extends'])
+
+        no_interpreted = set()
+        no_interpreted.union(config.get('no_interpreted', []))
+        no_interpreted.union(used.get('no_interpreted', []))
+        used['no_interpreted'] = list(no_interpreted)
+
         environment = config['environment']
         runtime_environment = config['runtime_environment']
         for e in used['runtime_environment']:
