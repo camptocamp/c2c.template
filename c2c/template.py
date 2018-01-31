@@ -357,8 +357,8 @@ def read_vars(vars_file):
         current_vars, config = read_vars(used['extends'])
 
         no_interpreted = set()
-        no_interpreted.union(config.get('no_interpreted', []))
-        no_interpreted.union(used.get('no_interpreted', []))
+        no_interpreted.update(config.get('no_interpreted', []))
+        no_interpreted.update(used.get('no_interpreted', []))
         used['no_interpreted'] = list(no_interpreted)
 
         environment = config['environment']
