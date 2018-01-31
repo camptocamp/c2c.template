@@ -189,7 +189,7 @@ class FormatWalker:
                 if path is None:
                     current_path = key
                 else:
-                    current_path = u"{}[{}]".format(path, key)
+                    current_path = u"{}.{}".format(path, key)
                 current_formatted = self.format_walker(current_vars[key], current_path)
                 current_vars[key] = current_formatted[0]
                 skip += current_formatted[1]
