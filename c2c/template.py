@@ -145,15 +145,12 @@ class FormatWalker:
         self.used_vars = used_vars
         self.no_interpreted = no_interpreted
         self.environment = environment
-        self.runtime_environment = runtime_environment
-
-        if runtime_environment is None:
-            runtime_environment = []
+        self.runtime_environment = runtime_environment or []
 
         self.all_environment_dict = {}
         for env in environment:
             self.all_environment_dict[env] = os.environ[env]
-        for env in runtime_environment:
+        for env in self.runtime_environment:
             self.all_environment_dict[env] = '{' + env + '}'
 
     def format_walker(self, current_vars, path=None):
