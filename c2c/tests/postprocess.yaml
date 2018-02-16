@@ -1,0 +1,13 @@
+vars:
+  a: '{A}'
+  b: '{B}'
+
+runtime_environment:
+ - A
+ - B
+runtime_postprocess:
+  - expression: int({})
+    vars: [a]
+  - expression: __import__('json').loads({})
+    vars: [b]
+    
