@@ -119,8 +119,10 @@ class TestTemplate(TestCase):
                             'v3': [1, 2, 3]
                         }
                     },
-                    'no_interpreted': [],
                     'environment': [],
+                    'interpreted': {},
+                    'no_interpreted': [],
+                    'postprocess': [],
                 }
             )
 
@@ -150,8 +152,10 @@ class TestTemplate(TestCase):
                             'v3': [1, 2, 3]
                         }
                     },
-                    'no_interpreted': [],
                     'environment': [],
+                    'interpreted': {},
+                    'no_interpreted': [],
+                    'postprocess': [],
                 }
             )
 
@@ -184,8 +188,10 @@ class TestTemplate(TestCase):
                             "pi": "3.14"
                         }
                     },
-                    'no_interpreted': [],
                     'environment': [],
+                    'interpreted': {},
+                    'no_interpreted': [],
+                    'postprocess': [],
                 }
             )
 
@@ -228,8 +234,10 @@ class TestTemplate(TestCase):
                             'v3': [1, 2, 3, 3, 4, 5]
                         }
                     },
-                    'no_interpreted': [],
                     'environment': [],
+                    'interpreted': {},
+                    'no_interpreted': [],
+                    'postprocess': [],
                 }
             )
 
@@ -248,8 +256,10 @@ class TestTemplate(TestCase):
                     'vars': {
                         "3third": "wanted"
                     },
-                    'no_interpreted': [],
                     'environment': [],
+                    'interpreted': {},
+                    'no_interpreted': [],
+                    'postprocess': [],
                 }
             )
 
@@ -268,8 +278,10 @@ class TestTemplate(TestCase):
                     'vars': {
                         "3third": "123"
                     },
-                    'no_interpreted': [],
                     'environment': [],
+                    'interpreted': {},
+                    'no_interpreted': [],
+                    'postprocess': [],
                 }
             )
 
@@ -362,8 +374,10 @@ class TestTemplate(TestCase):
                         'hh': ['ee88gg', 'hh88ii'],
                         'ii': '11 11 11',
                     },
-                    'no_interpreted': [],
                     'environment': ['BB_CC', 'DD_EE'],
+                    'interpreted': {},
+                    'no_interpreted': [],
+                    'postprocess': [],
                 }
             )
 
@@ -439,5 +453,25 @@ class TestTemplate(TestCase):
             result,
             {
                 'var': '{test}',
+            }
+        )
+
+    def test_runtime_postprocess(self):
+        import c2c.template
+        sys.argv = [
+            '', '--vars', 'c2c/tests/postprocess.yaml',
+            '--get-config', 'config.yaml', 'a', 'b'
+        ]
+        c2c.template.main()
+
+        os.environ['A'] = '11'
+        os.environ['B'] = '{"name": "toto"}'
+        result = c2c.template.get_config('config.yaml')
+
+        self.assertEquals(
+            result,
+            {
+                'a': 11,
+                'b': {'name': 'toto'},
             }
         )

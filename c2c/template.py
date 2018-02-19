@@ -28,6 +28,7 @@
 # either expressed or implied, of the FreeBSD Project.
 
 
+import copy
 import os
 import sys
 import traceback
@@ -51,13 +52,13 @@ except ImportError:  # pragma: nocover
         return out
 
 
-DOT_SPLITTER_RE = re.compile(r"(?<!\\)\.")
-ESCAPE_DOT_RE = re.compile(r"\\.")
+DOT_SPLITTER_RE = re.compile(r'(?<!\\)\.')
+ESCAPE_DOT_RE = re.compile(r'\\.')
 
 
 def dot_split(string):
     result = DOT_SPLITTER_RE.split(string)
-    return [ESCAPE_DOT_RE.sub('.', i) for i in result if i != ""]
+    return [ESCAPE_DOT_RE.sub('.', i) for i in result if i != '']
 
 
 def transform_path(value, path, action):
@@ -81,12 +82,12 @@ def get_config(file_name):
     with open(file_name) as f:
         config = yaml.safe_load(f.read())
     format_walker = FormatWalker(
-        config["vars"],
-        config.get("no_interpreted", []),
-        config.get("environment", [])
+        config['vars'],
+        config.get('no_interpreted', []),
+        config.get('environment', [])
     )
     format_walker()
-    return format_walker.used_vars
+    return do_process(config, format_walker.used_vars)
 
 
 def main():
@@ -99,36 +100,36 @@ def main():
     )
     parser.add_argument(
         '--vars', '-c',
-        help="the YAML file defining the variables"
+        help='the YAML file defining the variables'
     )
     parser.add_argument(
         '--cache',
-        help="the generated cache file"
+        help='the generated cache file'
     )
     parser.add_argument(
         '--get-cache',
-        help="generate a cache file"
+        help='generate a cache file'
     )
     parser.add_argument(
         '--section', action='store_true',
-        help="use the section (template specific)"
+        help='use the section (template specific)'
     )
     parser.add_argument(
         '--files', nargs='*',
-        help="the files to interpret"
+        help='the files to interpret'
     )
     parser.add_argument(
         '--get-vars', nargs='*', default=[],
-        help="the vars to get, can be MY_VAR=my_var"
+        help='the vars to get, can be MY_VAR=my_var'
     )
     parser.add_argument(
         '--get-config', nargs='*',
-        help="generate a configuration file"
+        help='generate a configuration file'
     )
     files_builder_help = \
-        "generate some files from a source file (first ARG), " \
-        "to files (second ARG, with format we can access to the value attribute), " \
-        "and get the value on iter on the variable referenced by the third argument"
+        'generate some files from a source file (first ARG), ' \
+        'to files (second ARG, with format we can access to the value attribute), ' \
+        'and get the value on iter on the variable referenced by the third argument'
     parser.add_argument(
         '--files-builder', nargs=3,
         metavar='ARG', help=files_builder_help
@@ -175,7 +176,7 @@ class FormatWalker:
 
         elif isinstance(current_vars, list):
             formatteds = [
-                self.format_walker(var, "{}[{}]".format(path, index))
+                self.format_walker(var, '{}[{}]'.format(path, index))
                 for index, var in enumerate(current_vars)
             ]
             return [v for v, s in formatteds], list(itertools.chain(*[s for v, s in formatteds]))
@@ -186,7 +187,7 @@ class FormatWalker:
                 if path is None:
                     current_path = key
                 else:
-                    current_path = u"{}.{}".format(path, key)
+                    current_path = '{}.{}'.format(path, key)
                 current_formatted = self.format_walker(current_vars[key], current_path)
                 current_vars[key] = current_formatted[0]
                 skip += current_formatted[1]
@@ -213,33 +214,33 @@ class FormatWalker:
 
 def do(options):
     if options.cache is not None and options.vars is not None:
-        print("The --vars and --cache options cannot be used together.")
+        print('The --vars and --cache options cannot be used together.')
         exit(1)
     if options.cache is None and options.vars is None:
-        print("One of the --vars or --cache options is required.")
+        print('One of the --vars or --cache options is required.')
         exit(1)
 
     if options.cache is not None:
         with open(options.cache, 'r') as file_open:
             cache = json.loads(file_open.read())
-            used_vars = cache["used_vars"]
-            config = cache["config"]
+            used_vars = cache['used_vars']
+            config = cache['config']
     else:
         used_vars, config = read_vars(options.vars)
 
         format_walker = FormatWalker(
             used_vars,
-            config.get("no_interpreted", []),
-            config.get("environment", []),
-            config.get("runtime_environment", [])
+            config.get('no_interpreted', []),
+            config.get('environment', []),
+            config.get('runtime_environment', [])
         )
         format_walker()
         used_vars = format_walker.used_vars
 
     if options.get_cache is not None:
         cache = {
-            "used_vars": used_vars,
-            "config": config,
+            'used_vars': used_vars,
+            'config': config,
         }
         with open(options.get_cache, 'wb') as file_open:
             file_open.write(json.dumps(cache).encode('utf-8'))
@@ -250,16 +251,16 @@ def do(options):
             corresp = (get_var.upper(), get_var)
 
         if len(corresp) != 2:  # pragma: nocover
-            print("ERROR the get variable '{0!s}' has more than one '='.".format((
+            print("ERROR the get variable '{}' has more than one '='.".format((
                 get_var
             )))
             exit(1)
 
-        print("{}={!r}".format(corresp[0], used_vars[corresp[1]]))
+        print('{}={!r}'.format(corresp[0], used_vars[corresp[1]]))
 
     if options.get_config is not None:
         new_vars = {
-            "vars": {}
+            'vars': {}
         }
         for v in options.get_config[1:]:
             var_path = v.split('.')
@@ -268,12 +269,14 @@ def do(options):
                 if key in value:
                     value = value[key]
                 else:
-                    print("ERROR the variable '{0!s}' don't exists.".format(v))
+                    print("ERROR the variable '{}' don't exists.".format(v))
                     exit(1)
 
-            new_vars["vars"][v] = value
-        new_vars["environment"] = config.get("runtime_environment", [])
-        new_vars["no_interpreted"] = config.get("no_interpreted", [])
+            new_vars['vars'][v] = value
+        new_vars['environment'] = config.get('runtime_environment', [])
+        new_vars['interpreted'] = config.get('runtime_interpreted', [])
+        new_vars['postprocess'] = config.get('runtime_postprocess', [])
+        new_vars['no_interpreted'] = config.get('no_interpreted', [])
 
         with open(options.get_config[0], 'wb') as file_open:
             file_open.write(yaml.safe_dump(new_vars).encode('utf-8'))
@@ -336,7 +339,7 @@ def bottle_template(files, used_vars, engine):
 
 def save(template, destination, processed):
     with open(destination, 'wb') as file_open:
-        file_open.write(processed.encode("utf-8"))
+        file_open.write(processed.encode('utf-8'))
     os.chmod(destination, os.stat(template).st_mode)
 
 
@@ -344,10 +347,10 @@ def read_vars(vars_file):
     with open(vars_file, 'r') as file_open:
         used = yaml.safe_load(file_open.read())
 
-    if 'environment' not in used:
-        used['environment'] = []
-    if 'runtime_environment' not in used:
-        used['runtime_environment'] = []
+    used.setdefault('environment', [])
+    used.setdefault('runtime_environment', [])
+    used.setdefault('runtime_interpreted', {})
+    used.setdefault('runtime_postprocess', [])
 
     current_vars = {}
     if 'extends' in used:
@@ -364,6 +367,33 @@ def read_vars(vars_file):
             if e in environment:
                 environment.remove(e)
             runtime_environment.append(e)
+        for name, interpreted in config.get('runtime_interpreted', {}).items():
+            if name in used['runtime_interpreted']:
+                if interpreted is list and used['runtime_interpreted'][name] is list:
+                    used['runtime_interpreted'][name] += interpreted
+                else:
+                    value = {
+                        'vars': []
+                    }
+                    if interpreted is list:
+                        value['vars'] += interpreted
+                    else:
+                        clone = copy.copy(interpreted)
+                        if 'vars' in clone:
+                            value['vars'] += clone['vars']
+                            del clone['vars']
+                        value.update(clone)
+                    if used['runtime_interpreted'][name] is list:
+                        value['vars'] += used['runtime_interpreted'][name]
+                    else:
+                        clone = copy.copy(used['runtime_interpreted'][name])
+                        if 'vars' in clone:
+                            value['vars'] += clone['vars']
+                            del clone['vars']
+                        value.update(clone)
+            else:
+                used['runtime_interpreted'][name] = interpreted
+        used['runtime_postprocess'] += config.get('runtime_postprocess', [])
         for e in used['environment']:
             if e in runtime_environment:
                 runtime_environment.remove(e)
@@ -371,46 +401,99 @@ def read_vars(vars_file):
         used['environment'] = environment
         used['runtime_environment'] = runtime_environment
 
-    new_vars = used['vars']
+    new_vars = do_process(used, used.get('vars', {}))
 
+    update_paths = []
+    for update_path in used.get('update_paths', []):
+        split_path = update_path.split('.')
+        for i in range(len(split_path)):
+            update_paths.append('.'.join(split_path[:i + 1]))
+    update_vars(current_vars, new_vars, set(update_paths))
+    return current_vars, used
+
+
+def do_process(used, new_vars):
+    globs = {
+        '__builtins__': {},
+        '__import__': __import__,
+        'abs': abs,
+        'all': all,
+        'any': any,
+        'bin': bin,
+        'bool': bool,
+        'bytearray': bytearray,
+        'bytes': bytes,
+        'chr': chr,
+        'dict': dict,
+        'enumerate': enumerate,
+        'filter': filter,
+        'float': float,
+        'format': format,
+        'frozenset': frozenset,
+        'getattr': getattr,
+        'hasattr': hasattr,
+        'hash': hash,
+        'hex': hex,
+        'int': int,
+        'isinstance': isinstance,
+        'issubclass': issubclass,
+        'iter': iter,
+        'len': len,
+        'list': list,
+        'map': map,
+        'max': max,
+        'min': min,
+        'next': next,
+        'object': object,
+        'oct': oct,
+        'ord': ord,
+        'pow': pow,
+        'print': print,
+        'property': property,
+        'range': range,
+        'repr': repr,
+        'reversed': reversed,
+        'round': round,
+        'slice': slice,
+        'sorted': sorted,
+        'str': str,
+        'sum': sum,
+        'tuple': tuple,
+        'type': type,
+        'zip': zip,
+    }
     if 'interpreted' in used:
         interpreters = []
-        globs = {'__builtins__': __builtins__, 'os': os, 'sys': sys}
         for key, interpreter in used['interpreted'].items():
             if isinstance(interpreter, dict):
-                interpreter["name"] = key
+                interpreter['name'] = key
                 if 'priority' not in interpreter:
-                    interpreter["priority"] = 0 if key in ['json', 'yaml'] else 100
+                    interpreter['priority'] = 0 if key in ['json', 'yaml'] else 100
             else:
                 interpreter = {
-                    "name": key,
-                    "vars": interpreter,
-                    "priority": 0 if key in ['json', 'yaml'] else 100
+                    'name': key,
+                    'vars': interpreter,
+                    'priority': 0 if key in ['json', 'yaml'] else 100
                 }
             interpreters.append(interpreter)
 
-        interpreters.sort(key=lambda v: -v["priority"])
+        interpreters.sort(key=lambda v: -v['priority'])
 
         for interpreter in interpreters:
-            for var_name in interpreter["vars"]:
-                if "cmd" in interpreter:
-                    ignore_error = interpreter.get("ignore_error", False)
+            for var_name in interpreter['vars']:
+                if 'cmd' in interpreter:
+                    ignore_error = interpreter.get('ignore_error', False)
 
                     def action(expression):
-                        cmd = interpreter["cmd"][:]  # [:] to clone
+                        cmd = interpreter['cmd'][:]  # [:] to clone
                         cmd.append(expression)
                         try:
-                            with open(os.devnull, "w") as dev_null:
+                            with open(os.devnull, 'w') as dev_null:
                                 return check_output(
                                     cmd, stderr=dev_null if ignore_error else None
                                 ).decode('utf-8').strip('\n')
-                        except OSError as e:  # pragma: nocover
-                            print("ERROR when running the expression '{0!r}': {1!s}".format(
-                                expression, e
-                            ))
-                            exit(1)
-                        except CalledProcessError as e:  # pragma: nocover
-                            error = "ERROR when running the expression '{0!r}': {1!s}".format(
+                        except (OSError, CalledProcessError) as e:  # pragma: nocover
+                            error = "ERROR when running the expression '{}': {}".format(
                                 expression, e
                             )
                             if ignore_error:
@@ -419,95 +502,106 @@ def read_vars(vars_file):
                                 print(error)
                                 exit(1)
 
-                elif interpreter["name"] == "python":
+                elif interpreter['name'] == 'python':
                     def action(expression):
                         try:
                             return eval(expression, globs)
                         except Exception:  # pragma: nocover
-                            error = "ERROR when evaluating {} expression {} as Python:\n{}".format(
+                            error = "ERROR when evaluating {} expression '{}' as Python:\n{}".format(
                                 var_name, expression, traceback.format_exc()
                             )
                             print(error)
-                            if interpreter.get("ignore_error", False):
+                            if interpreter.get('ignore_error', False):
                                 return error
                             else:
                                 exit(1)
-                elif interpreter["name"] == 'bash':
+                elif interpreter['name'] == 'bash':
                     def action(expression):
                         try:
                             return check_output(expression, shell=True).decode('utf-8').strip('\n')
-                        except OSError as e:  # pragma: nocover
-                            print("ERROR when running the expression '{0!r}': {1!s}".format(
-                                expression, e
-                            ))
-                            exit(1)
-                        except CalledProcessError as e:  # pragma: nocover
-                            error = "ERROR when running the expression '{0!r}': {1!s}".format(
+                        except (OSError, CalledProcessError) as e:  # pragma: nocover
+                            error = "ERROR when running the expression '{}': {}".format(
                                 expression, e
                             )
                             print(error)
-                            if interpreter.get("ignore_error", False):
+                            if interpreter.get('ignore_error', False):
                                 return error
                             else:
                                 exit(1)
 
-                elif interpreter["name"] == 'json':
+                elif interpreter['name'] == 'json':
                     def action(value):
                         try:
                             return json.loads(value)
                         except ValueError as e:  # pragma: nocover
-                            error = "ERROR when evaluating {} expression {} as JSON: {}".format(
+                            error = "ERROR when evaluating {} expression '{}' as JSON: {}".format(
                                 key, value, e
                             )
                             print(error)
-                            if interpreter.get("ignore_error", False):
+                            if interpreter.get('ignore_error', False):
                                 return error
                             else:
                                 exit(1)
-                elif interpreter["name"] == 'yaml':
+                elif interpreter['name'] == 'yaml':
                     def action(value):
                         try:
                             return yaml.safe_load(value)
                         except ParserError as e:  # pragma: nocover
-                            error = "ERROR when evaluating {} expression {} as YAML: {}".format(
+                            error = "ERROR when evaluating {} expression '{}' as YAML: {}".format(
                                 key, value, e
                             )
                             print(error)
-                            if interpreter.get("ignore_error", False):
+                            if interpreter.get('ignore_error', False):
                                 return error
                             else:
                                 exit(1)
                 else:  # pragma: nocover
-                    print("Unknown interpreter name '{}'.".format(interpreter["name"]))
+                    print("Unknown interpreter name '{}'.".format(interpreter['name']))
                     exit(1)
 
                 try:
                     transform_path(new_vars, dot_split(var_name), action)
                 except KeyError:  # pragma: nocover
-                    print("ERROR: Expression for key not found: {0!s}".format(var_name))
+                    print('ERROR: Expression for key not found: {}'.format(var_name))
                     exit(1)
 
-    update_paths = []
-    for update_path in used.get("update_paths", []):
-        split_path = update_path.split(".")
-        for i in range(len(split_path)):
-            update_paths.append(".".join(split_path[:i + 1]))
-    update_vars(current_vars, new_vars, set(update_paths))
-    return current_vars, used
+    for postprocess in used.get('postprocess', []):
+        ignore_error = postprocess.get('ignore_error', False)
+
+        def postprocess_action(value):
+            expression = postprocess['expression']  # [:] to clone
+            expression = expression.format(repr(value))
+            try:
+                return eval(expression, globs)
+            except ValueError as e:  # pragma: nocover
+                error = "ERROR when interpreting the expression '{}': {}".format(
+                    expression, e
+                )
+                print(error)
+                if ignore_error:
+                    return error
+                else:
+                    print(error)
+                    exit(1)
+                exit(1)
+        for var_name in postprocess['vars']:
+            transform_path(new_vars, dot_split(var_name), postprocess_action)
+
+    return new_vars
 
 
 def update_vars(current_vars, new_vars, update_paths, path=None):
     for key, value in new_vars.items():
         if "." in key:  # pragma: nocover
-            print("WARNING: the key '{0!s}' has a dot".format(key))
-        key_path = key if path is None else "{0!s}.{1!s}".format(path, key)
+            print("WARNING: the key '{}' has a dot".format(key))
+        key_path = key if path is None else '{}.{}'.format(path, key)
         if key_path in update_paths:
             if isinstance(value, dict) and isinstance(current_vars.get(key), dict):
                 update_vars(current_vars.get(key), value, update_paths, key_path)
             elif isinstance(value, list) and isinstance(current_vars.get(key), list):
                 current_vars.get(key).extend(value)
             else:  # pragma: nocover
-                print("ERROR: Unable to update the path '{0!s}', types '{1!r}', '{2!r}'.".format(
+                print("ERROR: Unable to update the path '{}', types '{}', '{}'.".format(
                     key_path, type(value), type(current_vars.get(key))
                 ))
         else:
