@@ -374,7 +374,7 @@ class TestTemplate(TestCase):
                         'hh': ['ee88gg', 'hh88ii'],
                         'ii': '11 11 11',
                     },
-                    'environment': ['BB_CC', 'DD_EE'],
+                    'environment': [{'name': 'BB_CC'}, {'name': 'DD_EE', 'default': '44_55'}],
                     'interpreted': {},
                     'no_interpreted': [],
                     'postprocess': [],
@@ -382,7 +382,6 @@ class TestTemplate(TestCase):
             )
 
         os.environ['BB_CC'] = '22_33'
-        os.environ['DD_EE'] = '44_55'
         result = c2c.template.get_config('config-env.yaml')
 
         self.assertEquals(
@@ -414,7 +413,7 @@ class TestTemplate(TestCase):
 
         os.environ['AA'] = '11'
         os.environ['BB_CC'] = '22_33'
-        os.environ['DD__EE'] = '44_55'
+        os.environ['DD_EE'] = '44_66'
         os.environ['FF'] = '66'
         os.environ['GG'] = '77'
         os.environ['HH'] = '88'
@@ -425,7 +424,7 @@ class TestTemplate(TestCase):
             {
                 'aa': '11',
                 'bb': {'cc': '22_33'},
-                'dd.ee': '44_55',
+                'dd.ee': '44_66',
                 'ff': 'ee66gg',
                 'gg': [{'name': 'ee77gg'}, {'name': 'hh77ii'}],
                 'hh': ['ee88gg', 'hh88ii'],
