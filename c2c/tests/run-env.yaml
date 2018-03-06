@@ -16,7 +16,8 @@ vars:
 runtime_environment:
 - AA
 - BB_CC
-- DD_EE
+- name: DD_EE
+  default: '44_55'
 - FF
 - GG
 - HH

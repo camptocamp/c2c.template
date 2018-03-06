@@ -150,9 +150,18 @@ class FormatWalker:
 
         self.all_environment_dict = {}
         for env in environment:
-            self.all_environment_dict[env] = os.environ[env]
+            if isinstance(env, str):
+                env = {'name': env}
+
+            if 'default' in env:
+                self.all_environment_dict[env['name']] = os.environ.get(env['name'], env['default'])
+            else:
+                self.all_environment_dict[env['name']] = os.environ[env['name']]
         for env in self.runtime_environment:
-            self.all_environment_dict[env] = '{' + env + '}'
+            if isinstance(env, str):
+                env = {'name': env}
+
+            self.all_environment_dict[env['name']] = '{' + env['name'] + '}'
 
     def format_walker(self, current_vars, path=None):
         if isinstance(current_vars, str):
@@ -164,8 +173,7 @@ class FormatWalker:
                 for _, attr, _, _ in attrs:
                     if attr is not None \
                             and attr not in self.formatted \
-                            and attr not in self.environment \
-                            and attr not in self.runtime_environment:
+                            and attr not in self.all_environment_dict.keys():
                         return current_vars, [[path, attr]]
                 self.formatted.append(path)
                 vars_ = {}
@@ -273,7 +281,9 @@ def do(options):
                     exit(1)
 
             new_vars['vars'][v] = value
-        new_vars['environment'] = config.get('runtime_environment', [])
+        new_vars['environment'] = [
+            {'name': env} if isinstance(env, str) else env for env in config.get('runtime_environment', [])
+        ]
         new_vars['interpreted'] = config.get('runtime_interpreted', [])
         new_vars['postprocess'] = config.get('runtime_postprocess', [])
         new_vars['no_interpreted'] = config.get('no_interpreted', [])
