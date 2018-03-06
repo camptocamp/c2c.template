@@ -75,7 +75,12 @@ def transform_path(value, path, action):
         if len(path) == 1:
             value[key] = action(value[key])
         else:
-            transform_path(value[key], path[1:], action)
+            if key in value:
+                transform_path(value[key], path[1:], action)
+            else:
+                print("Warning: The key '{}' is not present in: [{}]".format(
+                    key, ','.join(["'{}'".format(k) for k in value.keys()])
+                ))
 
 
 def get_config(file_name):
