@@ -368,7 +368,7 @@ class TestTemplate(TestCase):
                     'vars': {
                         'aa': '11',
                         'bb': {'cc': '{BB_CC}'},
-                        'dd.ee': '{DD_EE}',
+                        'dd.ee': '66_77',
                         'ff': 'ee66gg',
                         'gg': [{'name': 'ee77gg'}, {'name': 'hh77ii'}],
                         'hh': ['ee88gg', 'hh88ii'],
@@ -389,7 +389,7 @@ class TestTemplate(TestCase):
             {
                 'aa': '11',
                 'bb': {'cc': '22_33'},
-                'dd.ee': '44_55',
+                'dd.ee': '66_77',
                 'ff': 'ee66gg',
                 'gg': [{'name': 'ee77gg'}, {'name': 'hh77ii'}],
                 'hh': ['ee88gg', 'hh88ii'],

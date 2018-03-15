@@ -7,3 +7,5 @@ environment:
 - FF
 - GG
 - HH
+- name: DD_EE
+  default: '66_77'
