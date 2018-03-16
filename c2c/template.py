@@ -154,6 +154,11 @@ class FormatWalker:
         self.runtime_environment = runtime_environment or []
 
         self.all_environment_dict = {}
+        for env in self.runtime_environment:
+            if isinstance(env, str):
+                env = {'name': env}
+
+            self.all_environment_dict[env['name']] = '{' + env['name'] + '}'
         for env in environment:
             if isinstance(env, str):
                 env = {'name': env}
@@ -162,11 +167,6 @@ class FormatWalker:
                 self.all_environment_dict[env['name']] = os.environ.get(env['name'], env['default'])
             else:
                 self.all_environment_dict[env['name']] = os.environ[env['name']]
-        for env in self.runtime_environment:
-            if isinstance(env, str):
-                env = {'name': env}
-
-            self.all_environment_dict[env['name']] = '{' + env['name'] + '}'
 
     def format_walker(self, current_vars, path=None):
         if isinstance(current_vars, str):
