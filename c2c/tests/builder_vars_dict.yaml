@@ -1,0 +1,7 @@
+vars:
+    var1: first
+    iter:
+      aa:
+        var2: second
+      bb:
+        var2: "2"
