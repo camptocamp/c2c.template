@@ -124,6 +124,10 @@ def main():
         help='the files to interpret'
     )
     parser.add_argument(
+        '--runtime-environment-pattern',
+        help='Pattern used to format the runtime environment in interpreted files'
+    )
+    parser.add_argument(
         '--get-vars', nargs='*', default=[],
         help='the vars to get, can be MY_VAR=my_var'
     )
@@ -146,7 +150,10 @@ def main():
 class FormatWalker:
     formatter = Formatter()
 
-    def __init__(self, used_vars, no_interpreted, environment, runtime_environment=None):
+    def __init__(
+        self, used_vars, no_interpreted, environment, runtime_environment=None,
+        runtime_environment_pattern=None
+    ):
         self.formatted = []
         self.used_vars = used_vars
         self.no_interpreted = no_interpreted
@@ -154,11 +161,12 @@ class FormatWalker:
         self.runtime_environment = runtime_environment or []
 
         self.all_environment_dict = {}
-        for env in self.runtime_environment:
-            if isinstance(env, str):
-                env = {'name': env}
+        if runtime_environment_pattern is not None:
+            for env in self.runtime_environment:
+                if isinstance(env, str):
+                    env = {'name': env}
+                self.all_environment_dict[env['name']] = runtime_environment_pattern.format(env['name'])
 
-            self.all_environment_dict[env['name']] = '{' + env['name'] + '}'
         for env in environment:
             if isinstance(env, str):
                 env = {'name': env}
@@ -238,6 +246,18 @@ def do(options):
             cache = json.loads(file_open.read())
             used_vars = cache['used_vars']
             config = cache['config']
+
+        if options.files_builder is not None or options.files is not None:
+            print(config.get('environment', []))
+            format_walker = FormatWalker(
+                used_vars,
+                config.get('no_interpreted', []),
+                [],
+                config.get('runtime_environment', []),
+                options.runtime_environment_pattern,
+            )
+            format_walker()
+            used_vars = format_walker.used_vars
     else:
         used_vars, config = read_vars(options.vars)
 
@@ -245,7 +265,9 @@ def do(options):
             used_vars,
             config.get('no_interpreted', []),
             config.get('environment', []),
-            config.get('runtime_environment', [])
+            config.get('runtime_environment', []),
+            '{{{}}}' if options.get_config is not None or options.get_cache is not None
+            else options.runtime_environment_pattern,
         )
         format_walker()
         used_vars = format_walker.used_vars
@@ -255,6 +277,8 @@ def do(options):
             'used_vars': used_vars,
             'config': config,
         }
+        del cache['config']['vars']
+        del cache['config']['environment']
         with open(options.get_cache, 'wb') as file_open:
             file_open.write(json.dumps(cache).encode('utf-8'))
 
@@ -309,7 +333,7 @@ def do(options):
             values = values.values()
 
         elif not isinstance(values, list):  # pragma: nocover
-            print("ERROR the variable '{0!s}': '{1!r}' should be an array.".format(
+            print("ERROR the variable '{}': '{}' should be an array.".format(
                 options.files_builder[2], values
             ))
 
