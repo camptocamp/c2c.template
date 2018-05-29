@@ -302,7 +302,13 @@ def do(options):
         for key in var_path:
             values = values[key]
 
-        if not isinstance(values, list):  # pragma: nocover
+        if isinstance(values, dict):  # pragma: nocover
+            for key, value in values.items():
+                if isinstance(value, dict):
+                    value.setdefault('name', key)
+            values = values.values()
+
+        elif not isinstance(values, list):  # pragma: nocover
             print("ERROR the variable '{0!s}': '{1!r}' should be an array.".format(
                 options.files_builder[2], values
             ))
