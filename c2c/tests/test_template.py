@@ -326,6 +326,7 @@ class TestTemplate(TestCase):
         opt = Options()
         opt.vars = 'c2c/tests/loop.yaml'
         opt.get_cache = 'loop.cache.yaml'
+        opt.runtime_environment_pattern = None
 
         do(opt)
 
@@ -493,4 +494,60 @@ class TestTemplate(TestCase):
                 'a': 11,
                 'b': {'name': 'toto'},
             }
+        )
+
+    def test_template_missing_runtime_environment(self):
+        import c2c.template
+        sys.argv = [
+            '', '--vars', 'c2c/tests/run-env.yaml',
+            '--engine', 'mako', '--files', 'c2c/tests/env.tmpl.mako',
+        ]
+        self.assertRaises(SystemExit, c2c.template.main)
+
+    def test_template_runtime_environment(self):
+        import c2c.template
+        sys.argv = [
+            '', '--vars', 'c2c/tests/run-env.yaml',
+            '--engine', 'mako', '--runtime-environment-pattern=${{{}}}',
+            '--files', 'c2c/tests/env.tmpl.mako',
+        ]
+        c2c.template.main()
+
+        self.assertEquals(
+            open('c2c/tests/env.tmpl', 'r').read(),
+            '${AA}\n'
+        )
+
+    def test_template_missing_runtime_environment_cache(self):
+        import c2c.template
+        sys.argv = [
+            '', '--vars', 'c2c/tests/run-env.yaml',
+            '--get-cache', 'cache.yaml',
+        ]
+        c2c.template.main()
+
+        sys.argv = [
+            '', '--cache', 'cache.yaml',
+            '--engine', 'mako', '--files', 'c2c/tests/env.tmpl.mako',
+        ]
+        self.assertRaises(SystemExit, c2c.template.main)
+
+    def test_template_runtime_environment_cache(self):
+        import c2c.template
+        sys.argv = [
+            '', '--vars', 'c2c/tests/run-env.yaml',
+            '--get-cache', 'cache.yaml',
+        ]
+        c2c.template.main()
+
+        sys.argv = [
+            '', '--cache', 'cache.yaml',
+            '--engine', 'mako', '--runtime-environment-pattern=${{{}}}',
+            '--files', 'c2c/tests/env.tmpl.mako',
+        ]
+        c2c.template.main()
+
+        self.assertEquals(
+            open('c2c/tests/env.tmpl', 'r').read(),
+            '${AA}\n'
         )
