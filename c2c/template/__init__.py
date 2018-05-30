@@ -248,7 +248,6 @@ def do(options):
             config = cache['config']
 
         if options.files_builder is not None or options.files is not None:
-            print(config.get('environment', []))
             format_walker = FormatWalker(
                 used_vars,
                 config.get('no_interpreted', []),
