@@ -540,10 +540,10 @@ def do_process(used, new_vars):
                             error = "ERROR when running the expression '{}': {}".format(
                                 expression, e
                             )
+                            print(error)
                             if ignore_error:
                                 return error
                             else:
-                                print(error)
                                 exit(1)
 
                 elif interpreter['name'] == 'python':
@@ -625,7 +625,6 @@ def do_process(used, new_vars):
                 if ignore_error:
                     return error
                 else:
-                    print(error)
                     exit(1)
                 exit(1)
         for var_name in postprocess['vars']:
