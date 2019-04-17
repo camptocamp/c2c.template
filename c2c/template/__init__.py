@@ -638,7 +638,7 @@ def update_vars(current_vars, new_vars, update_paths, path=None):
         if "." in key:  # pragma: nocover
             print("WARNING: the key '{}' has a dot".format(key))
         key_path = key if path is None else '{}.{}'.format(path, key)
-        if key_path in update_paths:
+        if key_path in update_paths and key in current_vars:
             if isinstance(value, dict) and isinstance(current_vars.get(key), dict):
                 update_vars(current_vars.get(key), value, update_paths, key_path)
             elif isinstance(value, list) and isinstance(current_vars.get(key), list):
