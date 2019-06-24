@@ -28,8 +28,11 @@
 # either expressed or implied, of the FreeBSD Project.
 
 
+import logging
 import c2c.template
 from typing import Dict, Any
+
+LOG = logging.getLogger(__name__)
 
 
 class _Config(object):
@@ -43,15 +46,21 @@ class _Config(object):
         self._config = c2c.template.get_config(configfile)
 
     def get(self, key: str) -> Any:
-        assert self._config is not None, "The init method should be called first"
+        if self._config is None:
+            LOG.error("The init method should be called first")
+            return None
         return self._config.get(key)
 
     def __getitem__(self, key: str) -> Any:
-        assert self._config is not None, "The init method should be called first"
+        if self._config is None:
+            LOG.error("The init method should be called first")
+            return None
         return self._config[key]
 
     def get_config(self) -> Dict[str, Any]:
-        assert self._config is not None, "The init method should be called first"
+        if self._config is None:
+            LOG.error("The init method should be called first")
+            return None
         return self._config
 
 
