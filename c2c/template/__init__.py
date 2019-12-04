@@ -227,7 +227,7 @@ class FormatWalker:
 
         if len(skip) > 0:
             print(
-                "The following variable isn't correctly interpreted due missing dependency:\n" +
+                "ERROR: The following variable isn't correctly interpreted due missing dependency:\n" +
                 "\n".join(["'{}' depend on '{}'.".format(*e) for e in skip])
             )
             sys.exit(1)
@@ -235,11 +235,11 @@ class FormatWalker:
 
 def do(options):
     if options.cache is not None and options.vars is not None:
-        print('The --vars and --cache options cannot be used together.')
-        exit(1)
+        print('ERROR: The --vars and --cache options cannot be used together.')
+        sys.exit(1)
     if options.cache is None and options.vars is None:
-        print('One of the --vars or --cache options is required.')
-        exit(1)
+        print('ERROR: One of the --vars or --cache options is required.')
+        sys.exit(1)
 
     if options.cache is not None:
         with open(options.cache, 'r') as file_open:
@@ -287,10 +287,10 @@ def do(options):
             corresp = (get_var.upper(), get_var)
 
         if len(corresp) != 2:  # pragma: nocover
-            print("ERROR the get variable '{}' has more than one '='.".format((
+            print("ERROR: The get variable '{}' has more than one '='.".format((
                 get_var
             )))
-            exit(1)
+            sys.exit(1)
 
         print('{}={!r}'.format(corresp[0], used_vars[corresp[1]]))
 
@@ -305,8 +305,8 @@ def do(options):
                 if key in value:
                     value = value[key]
                 else:
-                    print("ERROR the variable '{}' don't exists.".format(v))
-                    exit(1)
+                    print("ERROR: The variable '{}' don't exists.".format(v))
+                    sys.exit(1)
 
             new_vars['vars'][v] = value
         new_vars['environment'] = [
@@ -332,9 +332,10 @@ def do(options):
             values = values.values()
 
         elif not isinstance(values, list):  # pragma: nocover
-            print("ERROR the variable '{}': '{}' should be an array.".format(
+            print("ERROR: The variable '{}': '{}' should be an array.".format(
                 options.files_builder[2], values
             ))
+            sys.exit(1)
 
         for value in values:
             file_vars = {}
@@ -537,77 +538,77 @@ def do_process(used, new_vars):
                                     cmd, stderr=dev_null if ignore_error else None
                                 ).decode('utf-8').strip('\n')
                         except (OSError, CalledProcessError) as e:  # pragma: nocover
-                            error = "ERROR when running the expression '{}': {}".format(
+                            error = "ERROR: When running the expression '{}': {}".format(
                                 expression, e
                             )
                             print(error)
                             if ignore_error:
                                 return error
                             else:
-                                exit(1)
+                                sys.exit(1)
 
                 elif interpreter['name'] == 'python':
                     def action(expression):
                         try:
                             return eval(expression, globs)
                         except Exception:  # pragma: nocover
-                            error = "ERROR when evaluating {} expression '{}' as Python:\n{}".format(
+                            error = "ERROR: When evaluating {} expression '{}' as Python:\n{}".format(
                                 var_name, expression, traceback.format_exc()
                             )
                             print(error)
                             if interpreter.get('ignore_error', False):
                                 return error
                             else:
-                                exit(1)
+                                sys.exit(1)
                 elif interpreter['name'] == 'bash':
                     def action(expression):
                         try:
                             return check_output(expression, shell=True).decode('utf-8').strip('\n')
                         except (OSError, CalledProcessError) as e:  # pragma: nocover
-                            error = "ERROR when running the expression '{}': {}".format(
+                            error = "ERROR: When running the expression '{}': {}".format(
                                 expression, e
                             )
                             print(error)
                             if interpreter.get('ignore_error', False):
                                 return error
                             else:
-                                exit(1)
+                                sys.exit(1)
 
                 elif interpreter['name'] == 'json':
                     def action(value):
                         try:
                             return json.loads(value)
                         except ValueError as e:  # pragma: nocover
-                            error = "ERROR when evaluating {} expression '{}' as JSON: {}".format(
+                            error = "ERROR: When evaluating {} expression '{}' as JSON: {}".format(
                                 key, value, e
                             )
                             print(error)
                             if interpreter.get('ignore_error', False):
                                 return error
                             else:
-                                exit(1)
+                                sys.exit(1)
                 elif interpreter['name'] == 'yaml':
                     def action(value):
                         try:
                             return yaml.safe_load(value)
                         except ParserError as e:  # pragma: nocover
-                            error = "ERROR when evaluating {} expression '{}' as YAML: {}".format(
+                            error = "ERROR: When evaluating {} expression '{}' as YAML: {}".format(
                                 key, value, e
                             )
                             print(error)
                             if interpreter.get('ignore_error', False):
                                 return error
                             else:
-                                exit(1)
+                                sys.exit(1)
                 else:  # pragma: nocover
-                    print("Unknown interpreter name '{}'.".format(interpreter['name']))
-                    exit(1)
+                    print("ERROR: Unknown interpreter name '{}'.".format(interpreter['name']))
+                    sys.exit(1)
 
                 try:
                     transform_path(new_vars, dot_split(var_name), action)
                 except KeyError:  # pragma: nocover
                     print('ERROR: Expression for key not found: {}'.format(var_name))
-                    exit(1)
+                    sys.exit(1)
 
     for postprocess in used.get('postprocess', []):
         ignore_error = postprocess.get('ignore_error', False)
@@ -618,15 +619,14 @@ def do_process(used, new_vars):
             try:
                 return eval(expression, globs)
             except ValueError as e:  # pragma: nocover
-                error = "ERROR when interpreting the expression '{}': {}".format(
+                error = "ERROR: When interpreting the expression '{}': {}".format(
                     expression, e
                 )
                 print(error)
                 if ignore_error:
                     return error
                 else:
-                    exit(1)
-                exit(1)
+                    sys.exit(1)
         for var_name in postprocess['vars']:
             transform_path(new_vars, dot_split(var_name), postprocess_action)
 
@@ -636,15 +636,18 @@ def do_process(used, new_vars):
 def update_vars(current_vars, new_vars, update_paths, path=None):
     for key, value in new_vars.items():
         if "." in key:  # pragma: nocover
-            print("WARNING: the key '{}' has a dot".format(key))
+            print("ERROR: the key '{}' has a dot".format(key))
+            sys.exit(1)
         key_path = key if path is None else '{}.{}'.format(path, key)
         if key_path in update_paths and key in current_vars:
             if isinstance(value, dict) and isinstance(current_vars.get(key), dict):
                 update_vars(current_vars.get(key), value, update_paths, key_path)
             elif isinstance(value, list) and isinstance(current_vars.get(key), list):
                 current_vars.get(key).extend(value)
+            elif value is None:
+                print("INFO: Update the path '{}' with None (ignoring).")
             else:  # pragma: nocover
-                print("ERROR: Unable to update the path '{}', types '{}', '{}'.".format(
+                print("WARNING: Unable to update the path '{}', types '{}', '{}' (ignoring).".format(
                     key_path, type(value), type(current_vars.get(key))
                 ))
         else:
