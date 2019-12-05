@@ -31,6 +31,7 @@
 import os
 import sys
 import yaml
+import json
 from io import StringIO
 from unittest import TestCase
 
@@ -550,4 +551,36 @@ class TestTemplate(TestCase):
         self.assertEquals(
             open('c2c/tests/env.tmpl', 'r').read(),
             '${AA}\n'
+        )
+
+    def test_include_cache(self):
+        import c2c.template
+        sys.argv = [
+            '', '--vars', 'c2c/tests/include.yaml',
+            '--get-cache', 'cache.json',
+        ]
+        c2c.template.main()
+
+        self.assertEquals(
+            json.loads(open('cache.json', 'r').read()),
+            {
+                'used_vars': {
+                    'ggg': {
+                        'a': {
+                            'c': 'g'
+                        }
+                    },
+                    'hhh': [1, 2],
+                    'iii': [{
+                        'a': {
+                            'c': 'g'
+                        }
+                    }]
+                },
+                'config': {
+                    'runtime_environment': [],
+                    'runtime_interpreted': {},
+                    'runtime_postprocess': []
+                }
+            }
         )

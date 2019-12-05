@@ -40,6 +40,7 @@ from yaml.parser import ParserError
 from argparse import ArgumentParser
 from string import Formatter
 from subprocess import CalledProcessError
+from yamlinclude import YamlIncludeConstructor
 try:
     from subprocess import check_output
 except ImportError:  # pragma: nocover
@@ -387,9 +388,16 @@ def save(template, destination, processed):
     os.chmod(destination, os.stat(template).st_mode)
 
 
+class BuildLoader(yaml.SafeLoader):
+    pass
+
+
 def read_vars(vars_file):
+    YamlIncludeConstructor.add_to_loader_class(
+        loader_class=BuildLoader, base_dir=os.path.dirname(vars_file)
+    )
     with open(vars_file, 'r') as file_open:
-        used = yaml.safe_load(file_open.read())
+        used = yaml.load(file_open.read(), BuildLoader)
 
     used.setdefault('environment', [])
     used.setdefault('runtime_environment', [])

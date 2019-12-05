@@ -1,0 +1,5 @@
+vars:
+  ggg: !include include_1.yaml
+  hhh: !include include_2.yaml
+  iii:
+    - !include include_1.yaml
