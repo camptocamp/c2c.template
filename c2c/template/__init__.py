@@ -653,7 +653,7 @@ def update_vars(current_vars, new_vars, update_paths, path=None):
             elif isinstance(value, list) and isinstance(current_vars.get(key), list):
                 current_vars.get(key).extend(value)
             elif value is None:
-                print("INFO: Update the path '{}' with None (ignoring).")
+                print("INFO: Update the path '{}' with None (ignoring).".format(key_path))
             else:  # pragma: nocover
                 print("WARNING: Unable to update the path '{}', types '{}', '{}' (ignoring).".format(
                     key_path, type(value), type(current_vars.get(key))
