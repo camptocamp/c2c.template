@@ -1,12 +1,32 @@
 vars:
   a: '{A}'
   b: '{B}'
+  c:
+    d: '3'
+  e: '{C}'
+  f:
+    - '{D}'
+  g:
+    - '{E}'
+  h:
+    - '1'
+  i:
+    - '2'
 
 runtime_environment:
   - A
   - B
 runtime_postprocess:
   - expression: int({})
-    vars: [a]
+    vars:
+      - a
+      - c\.d
+      - some.other
+      - h.[0]
+      - i.[]
   - expression: __import__('json').loads({})
     vars: [b]
+no_interpreted:
+  - e
+  - f[0]
+  - g[]

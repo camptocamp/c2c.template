@@ -57,6 +57,7 @@ except ImportError:  # pragma: nocover
 
 DOT_SPLITTER_RE = re.compile(r"(?<!\\)\.")
 ESCAPE_DOT_RE = re.compile(r"\\.")
+INDEX_RE = re.compile(r"^\[([0-9]+)\]$")
 
 
 def dot_split(string):
@@ -75,17 +76,39 @@ def transform_path(value, path, action):
             for v in value:
                 transform_path(v, path[1:], action)
     else:
-        if len(path) == 1:
-            value[key] = action(value[key])
-        else:
-            if key in value:
-                transform_path(value[key], path[1:], action)
-            else:
+        if isinstance(value, dict):
+            if key not in value:
                 print(
                     "Warning: The key '{}' is not present in: [{}]".format(
-                        key, ",".join(["'{}'".format(k) for k in value.keys()])
+                        key, ", ".join(["'{}'".format(k) for k in value.keys()])
                     )
                 )
+            else:
+                if len(path) == 1:
+                    value[key] = action(value[key])
+                else:
+                    transform_path(value[key], path[1:], action)
+        elif isinstance(value, list):
+
+            def replace(path, value, index):
+                if index >= len(value):
+                    print("Warning: The key '{}' is not present in: [{}]".format(key, f"0..{len(value) - 1}"))
+                else:
+                    if len(path) == 1:
+                        value[index] = action(value[index])
+                    else:
+                        transform_path(value[index], path[1:], action)
+
+            if path[0] == "[]":
+                for index in range(len(value)):
+                    replace(path, value, index)
+            elif INDEX_RE.match(path[0]):
+                index = int(INDEX_RE.match(path[0]).group(1))
+                replace(path, value, index)
+            else:
+                print(f"Warning: The key '{key}' is not valid for list")
+        else:
+            print(f"Warning: The value '{value}' is not valid, it should be a list or a dict")
 
 
 def get_config(file_name):
@@ -157,10 +180,16 @@ class FormatWalker:
             else:
                 self.all_environment_dict[env["name"]] = os.environ[env["name"]]
 
-    def format_walker(self, current_vars, path=None):
+    def path_in(self, path_list, list):
+        for path in path_list:
+            if path in list:
+                return True
+        return False
+
+    def format_walker(self, current_vars, path=None, path_list=None):
         if isinstance(current_vars, str):
             if path not in self.formatted:
-                if path in self.no_interpreted:
+                if self.path_in(path_list, self.no_interpreted):
                     self.formatted.append(path)
                     return current_vars, []
                 attrs = self.formatter.parse(current_vars)
@@ -179,10 +208,13 @@ class FormatWalker:
             return current_vars, []
 
         elif isinstance(current_vars, list):
-            formatteds = [
-                self.format_walker(var, "{}[{}]".format(path, index))
-                for index, var in enumerate(current_vars)
-            ]
+            formatteds = []
+            for index, var in enumerate(current_vars):
+                new_path = f"{path}[{index}]"
+                new_path_list = []
+                for pl in path_list:
+                    new_path_list += [f"{path}[{index}]", f"{path}[]"]
+                formatteds.append(self.format_walker(var, new_path, new_path_list))
             return [v for v, s in formatteds], list(itertools.chain(*[s for v, s in formatteds]))
 
         elif isinstance(current_vars, dict):
@@ -190,9 +222,11 @@ class FormatWalker:
             for key in current_vars.keys():
                 if path is None:
                     current_path = key
+                    current_path_list = [key]
                 else:
-                    current_path = "{}.{}".format(path, key)
-                current_formatted = self.format_walker(current_vars[key], current_path)
+                    current_path = f"{path}.{key}"
+                    current_path_list = [f"{pl}.{key}" for pl in path_list]
+                current_formatted = self.format_walker(current_vars[key], current_path, current_path_list)
                 current_vars[key] = current_formatted[0]
                 skip += current_formatted[1]
             return current_vars, skip
@@ -285,8 +319,7 @@ def do(options):
                 if key in value:
                     value = value[key]
                 else:
-                    print("ERROR: The variable '{}' don't exists.".format(v))
-                    sys.exit(1)
+                    print("WARNING: The variable '{}' don't exists.".format(v))
 
             new_vars["vars"][v] = value
         new_vars["environment"] = [
@@ -623,8 +656,7 @@ def do_process(used, new_vars):
 def update_vars(current_vars, new_vars, update_paths, path=None):
     for key, value in new_vars.items():
         if "." in key:  # pragma: nocover
-            print("ERROR: the key '{}' has a dot".format(key))
-            sys.exit(1)
+            print("WARNING: the key '{}' has a dot".format(key))
         key_path = key if path is None else "{}.{}".format(path, key)
         if key_path in update_paths and key in current_vars:
             if isinstance(value, dict) and isinstance(current_vars.get(key), dict):

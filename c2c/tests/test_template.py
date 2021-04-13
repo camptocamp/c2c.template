@@ -168,13 +168,6 @@ class TestTemplate(TestCase):
                 },
             )
 
-    def test_get_config_wrong(self):
-        from c2c.template import main
-
-        sys.argv = ["", "--vars", "c2c/tests/vars.yaml", "--get-config", "config2.yaml", "wrong"]
-        with self.assertRaises(SystemExit):
-            main()
-
     def test_path(self):
         from c2c.template import main
 
@@ -505,7 +498,21 @@ class TestTemplate(TestCase):
     def test_runtime_postprocess(self):
         import c2c.template
 
-        sys.argv = ["", "--vars", "c2c/tests/postprocess.yaml", "--get-config", "config.yaml", "a", "b"]
+        sys.argv = [
+            "",
+            "--vars",
+            "c2c/tests/postprocess.yaml",
+            "--get-config",
+            "config.yaml",
+            "a",
+            "b",
+            "c.d",
+            "e",
+            "f",
+            "g",
+            "h",
+            "i",
+        ]
         c2c.template.main()
 
         os.environ["A"] = "11"
@@ -517,6 +524,12 @@ class TestTemplate(TestCase):
             {
                 "a": 11,
                 "b": {"name": "toto"},
+                "c.d": 3,
+                "e": "{C}",
+                "f": ["{D}"],
+                "g": ["{E}"],
+                "h": [1],
+                "i": [2],
             },
         )
 
