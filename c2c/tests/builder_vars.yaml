@@ -1,6 +1,6 @@
 vars:
-    var1: first
-    iter: 
+  var1: first
+  iter:
     - name: aa
       var2: second
     - name: bb
