@@ -29,8 +29,9 @@
 
 
 import logging
+from typing import Any, Dict
+
 import c2c.template
-from typing import Dict, Any
 
 LOG = logging.getLogger(__name__)
 

@@ -27,28 +27,31 @@
 
 
 import os
+import site
+import sys
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
+site.ENABLE_USER_SITE = "--user" in sys.argv
 
 HERE = os.path.abspath(os.path.dirname(__file__))
-README = open(os.path.join(HERE, 'README.rst')).read()
+README = open(os.path.join(HERE, "README.rst")).read()
 
 
 install_requires = [
-    'bottle',
-    'Jinja2',
-    'Mako',
-    'PyYAML',
-    'pyyaml-include',
+    "bottle",
+    "Jinja2",
+    "Mako",
+    "PyYAML",
+    "pyyaml-include",
 ]
 
 setup(
-    name='c2c.template',
-    version='2.2.1',
-    description='Vars collector and template runner.',
+    name="c2c.template",
+    version="2.2.1",
+    description="Vars collector and template runner.",
     long_description=README,
-    namespace_packages=['c2c'],
+    namespace_packages=["c2c"],
     classifiers=[
         "Programming Language :: Python",
         "Environment :: Console",
@@ -57,23 +60,23 @@ setup(
         "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
         "Topic :: Utilities",
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
     ],
-    author='camptocamp',
-    author_email='info@camptocamp.com',
-    url='http://www.camptocamp.com/geospatial-solutions',
-    keywords='template',
+    author="camptocamp",
+    author_email="info@camptocamp.com",
+    url="http://www.camptocamp.com/geospatial-solutions",
+    keywords="template",
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
     install_requires=install_requires,
     test_suite="c2c.template",
     entry_points={
-        'console_scripts': [
-            'c2c-template = c2c.template:main',
+        "console_scripts": [
+            "c2c-template = c2c.template:main",
         ],
-    }
+    },
 )
