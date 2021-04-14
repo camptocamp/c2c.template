@@ -67,50 +67,59 @@ def dot_split(string):
     return [ESCAPE_DOT_RE.sub(".", i) for i in result if i != ""]
 
 
-def transform_path(value, path, action):
+def transform_path(value, path, action, current_path=""):
     assert len(path) > 0
     key = path[0]
     if isinstance(value, list) and key == "[]":
         if len(path) == 1:
             for i, v in enumerate(value):
-                value[i] = action(v)
+                value[i] = action(v, f"{current_path}[{i}]")
         else:
-            for v in value:
-                transform_path(v, path[1:], action)
+            for i, v in enumerate(value):
+                transform_path(v, path[1:], action, f"{current_path}[{i}]")
     else:
         if isinstance(value, dict):
             if key not in value:
                 LOG.warn(
-                    "The key '%s' is not present in: [%s]",
+                    "The key '%s' in '%s' is not present in: [%s]",
                     key,
+                    current_path,
                     ", ".join(["'{}'".format(k) for k in value.keys()]),
                 )
             else:
                 if len(path) == 1:
-                    value[key] = action(value[key])
+                    value[key] = action(value[key], f"{current_path}.{path[0]}")
                 else:
-                    transform_path(value[key], path[1:], action)
+                    transform_path(value[key], path[1:], action, f"{current_path}.{path[0]}")
+
         elif isinstance(value, list):
 
-            def replace(path, value, index):
+            def replace(path, current_path, value, index):
                 if index >= len(value):
-                    LOG.warn("The key '%s' is not present in: [%s]", key, f"0..{len(value) - 1}")
+                    LOG.warn(
+                        "The key '%s' in '%s' is not present in: [%s]",
+                        key,
+                        current_path,
+                        f"0..{len(value) - 1}",
+                    )
                 else:
                     if len(path) == 1:
-                        value[index] = action(value[index])
+                        value[index] = action(value[index], f"{current_path}[{index}]")
                     else:
-                        transform_path(value[index], path[1:], action)
+                        transform_path(value[index], path[1:], action, f"{current_path}[{index}]")
 
             if path[0] == "[]":
                 for index in range(len(value)):
-                    replace(path, value, index)
+                    replace(path, current_path, value, index)
             elif INDEX_RE.match(path[0]):
                 index = int(INDEX_RE.match(path[0]).group(1))
-                replace(path, value, index)
+                replace(path, current_path, value, index)
             else:
-                LOG.warn("The key '{%s}' is not valid for list", key)
+                LOG.warn("The key '%s' in '%s' is not valid for list", key, current_path)
         else:
-            LOG.warn("The value '{%s}' is not valid, it should be a list or a dict", value)
+            LOG.warn(
+                "The value '%s' in '%s' is not valid, it should be a list or a dict", value, current_path
+            )
 
 
 def get_config(file_name):
@@ -546,7 +555,7 @@ def do_process(used, new_vars):
                 if "cmd" in interpreter:
                     ignore_error = interpreter.get("ignore_error", False)
 
-                    def action(expression):
+                    def action(expression, current_path):
                         cmd = interpreter["cmd"][:]  # [:] to clone
                         cmd.append(expression)
                         try:
@@ -557,7 +566,9 @@ def do_process(used, new_vars):
                                     .strip("\n")
                                 )
                         except (OSError, CalledProcessError) as e:  # pragma: nocover
-                            error = "When running the expression '{}': {}".format(expression, e)
+                            error = "When running the expression '{}' in '{}': {}".format(
+                                expression, current_path, e
+                            )
                             LOG.error(error)
                             if ignore_error:
                                 return "ERROR: " + error
@@ -566,12 +577,12 @@ def do_process(used, new_vars):
 
                 elif interpreter["name"] == "python":
 
-                    def action(expression):
+                    def action(expression, current_path):
                         try:
                             return eval(expression, globs)
                         except Exception:  # pragma: nocover
-                            error = "When evaluating {} expression '{}' as Python:\n{}".format(
-                                var_name, expression, traceback.format_exc()
+                            error = "When evaluating {} expression '{}' in '{}' as Python:\n{}".format(
+                                var_name, expression, current_path, traceback.format_exc()
                             )
                             LOG.error(error)
                             if interpreter.get("ignore_error", False):
@@ -581,11 +592,13 @@ def do_process(used, new_vars):
 
                 elif interpreter["name"] == "bash":
 
-                    def action(expression):
+                    def action(expression, current_path):
                         try:
                             return check_output(expression, shell=True).decode("utf-8").strip("\n")
                         except (OSError, CalledProcessError) as e:  # pragma: nocover
-                            error = "When running the expression '{}': {}".format(expression, e)
+                            error = "When running the expression '{}' in [{}]: {}".format(
+                                expression, current_path, e
+                            )
                             LOG.error(error)
                             if interpreter.get("ignore_error", False):
                                 return "ERROR: " + error
@@ -594,11 +607,13 @@ def do_process(used, new_vars):
 
                 elif interpreter["name"] == "json":
 
-                    def action(value):
+                    def action(value, current_path):
                         try:
                             return json.loads(value)
                         except ValueError as e:  # pragma: nocover
-                            error = "When evaluating {} expression '{}' as JSON: {}".format(key, value, e)
+                            error = "When evaluating {} expression '{}' in '{}' as JSON: {}".format(
+                                key, value, current_path, e
+                            )
                             LOG.error(error)
                             if interpreter.get("ignore_error", False):
                                 return "ERROR: " + error
@@ -607,11 +622,13 @@ def do_process(used, new_vars):
 
                 elif interpreter["name"] == "yaml":
 
-                    def action(value):
+                    def action(value, current_path):
                         try:
                             return yaml.safe_load(value)
                         except ParserError as e:  # pragma: nocover
-                            error = "When evaluating {} expression '{}' as YAML: {}".format(key, value, e)
+                            error = "When evaluating {} expression '{}' in '{}' as YAML: {}".format(
+                                key, value, current_path, e
+                            )
                             LOG.error(error)
                             if interpreter.get("ignore_error", False):
                                 return "ERROR: " + error
@@ -631,13 +648,15 @@ def do_process(used, new_vars):
     for postprocess in used.get("postprocess", []):
         ignore_error = postprocess.get("ignore_error", False)
 
-        def postprocess_action(value):
+        def postprocess_action(value, current_path):
             expression = postprocess["expression"]  # [:] to clone
             expression = expression.format(repr(value))
             try:
                 return eval(expression, globs)
             except ValueError as e:  # pragma: nocover
-                error = "When interpreting the expression '{}': {}".format(expression, e)
+                error = "When interpreting the expression '{}' in '{}': {}".format(
+                    expression, current_path, e
+                )
                 LOG.error(error)
                 if ignore_error:
                     return "ERROR: " + error
