@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright (c) 2011-2014, Camptocamp SA
 # All rights reserved.
 
@@ -68,7 +66,7 @@ class TestTemplate(TestCase):
         main()
 
         self.assertEquals(
-            open("c2c/tests/jinja", "r").read(),
+            open("c2c/tests/jinja").read(),
             "var1: first, var2: second\n"
             "var3: first, second, third\n"
             "var_interpreted: 4\n"
@@ -84,7 +82,7 @@ class TestTemplate(TestCase):
         main()
 
         self.assertEquals(
-            open("c2c/tests/mako", "r").read(),
+            open("c2c/tests/mako").read(),
             "var1: first, var2: second\n" "var3: first, second, third\n" "var_interpreted: 4\n",
         )
 
@@ -562,7 +560,7 @@ class TestTemplate(TestCase):
         ]
         c2c.template.main()
 
-        self.assertEquals(open("c2c/tests/env.tmpl", "r").read(), "${AA}\n")
+        self.assertEquals(open("c2c/tests/env.tmpl").read(), "${AA}\n")
 
     def test_template_missing_runtime_environment_cache(self):
         import c2c.template
@@ -611,7 +609,7 @@ class TestTemplate(TestCase):
         ]
         c2c.template.main()
 
-        self.assertEquals(open("c2c/tests/env.tmpl", "r").read(), "${AA}\n")
+        self.assertEquals(open("c2c/tests/env.tmpl").read(), "${AA}\n")
 
     def test_include_cache(self):
         import c2c.template
@@ -626,7 +624,7 @@ class TestTemplate(TestCase):
         c2c.template.main()
 
         self.assertEquals(
-            json.loads(open("cache.json", "r").read()),
+            json.loads(open("cache.json").read()),
             {
                 "used_vars": {"ggg": {"a": {"c": "g"}}, "hhh": [1, 2], "iii": [{"a": {"c": "g"}}]},
                 "config": {"runtime_environment": [], "runtime_interpreted": {}, "runtime_postprocess": []},

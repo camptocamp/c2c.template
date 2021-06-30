@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright (c) 2018, Camptocamp SA
 # All rights reserved.
 
@@ -36,7 +34,7 @@ import c2c.template
 LOG = logging.getLogger(__name__)
 
 
-class _Config(object):
+class _Config:
     """
     A central point where we can access to the application configuration.
     """
