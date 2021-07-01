@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright (c) 2011-2018, Camptocamp SA
 # All rights reserved.
 
@@ -50,7 +48,9 @@ except ImportError:  # pragma: nocover
     from subprocess import PIPE, Popen
 
     def check_output(cmd, cwd=None, stdin=None, stderr=None, shell=False):  # noqa
-        """Backwards compatible check_output"""
+        """
+        Backwards compatible check_output.
+        """
         p = Popen(cmd, cwd=cwd, stdin=stdin, stderr=stderr, shell=shell, stdout=PIPE)
         out, _ = p.communicate()
         return out
@@ -84,7 +84,7 @@ def transform_path(value, path, action, current_path=""):
                     "The key '%s' in '%s' is not present in: [%s]",
                     key,
                     current_path,
-                    ", ".join(["'{}'".format(k) for k in value.keys()]),
+                    ", ".join([f"'{k}'" for k in value.keys()]),
                 )
             else:
                 if len(path) == 1:
@@ -227,7 +227,7 @@ class FormatWalker:
                 for pl in path_list:
                     new_path_list += [f"{path}[{index}]", f"{path}[]"]
                 formatteds.append(self.format_walker(var, new_path, new_path_list))
-            return [v for v, s in formatteds], list(itertools.chain(*[s for v, s in formatteds]))
+            return [v for v, s in formatteds], list(itertools.chain(*(s for v, s in formatteds)))
 
         elif isinstance(current_vars, dict):
             skip = []
@@ -271,7 +271,7 @@ def do(options):
         sys.exit(1)
 
     if options.cache is not None:
-        with open(options.cache, "r") as file_open:
+        with open(options.cache) as file_open:
             cache = json.loads(file_open.read())
             used_vars = cache["used_vars"]
             config = cache["config"]
@@ -317,10 +317,10 @@ def do(options):
             corresp = (get_var.upper(), get_var)
 
         if len(corresp) != 2:  # pragma: nocover
-            LOG.error("The get variable '{}' has more than one '='".format((get_var)))
+            LOG.error(f"The get variable '{get_var}' has more than one '='")
             sys.exit(1)
 
-        print("{}={!r}".format(corresp[0], used_vars[corresp[1]]))
+        print(f"{corresp[0]}={used_vars[corresp[1]]!r}")
 
     if options.get_config is not None:
         new_vars = {"vars": {}}
@@ -417,7 +417,7 @@ class BuildLoader(yaml.SafeLoader):
 
 def read_vars(vars_file):
     YamlIncludeConstructor.add_to_loader_class(loader_class=BuildLoader, base_dir=os.path.dirname(vars_file))
-    with open(vars_file, "r") as file_open:
+    with open(vars_file) as file_open:
         used = yaml.load(file_open.read(), BuildLoader)
 
     used.setdefault("environment", [])
@@ -642,7 +642,7 @@ def do_process(used, new_vars):
                 try:
                     transform_path(new_vars, dot_split(var_name), action)
                 except KeyError:  # pragma: nocover
-                    LOG.error("Expression for key not found: {}".format(var_name))
+                    LOG.error(f"Expression for key not found: {var_name}")
                     sys.exit(1)
 
     for postprocess in used.get("postprocess", []):
@@ -673,7 +673,7 @@ def update_vars(current_vars, new_vars, update_paths, path=None):
     for key, value in new_vars.items():
         if "." in key:  # pragma: nocover
             LOG.warn("The key '%s' has a dot", key)
-        key_path = key if path is None else "{}.{}".format(path, key)
+        key_path = key if path is None else f"{path}.{key}"
         if key_path in update_paths and key in current_vars:
             if isinstance(value, dict) and isinstance(current_vars.get(key), dict):
                 update_vars(current_vars.get(key), value, update_paths, key_path)
