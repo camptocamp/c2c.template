@@ -61,9 +61,7 @@ setup(
         "Operating System :: OS Independent",
         "Topic :: Utilities",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.4",
-        "Programming Language :: Python :: 3.5",
-        "Programming Language :: Python :: 3.6",
+        "Typing :: Typed",
     ],
     author="camptocamp",
     author_email="info@camptocamp.com",
@@ -74,6 +72,7 @@ setup(
     zip_safe=False,
     install_requires=install_requires,
     test_suite="c2c.template",
+    package_data={"c2c/template": ["py.typed"]},
     entry_points={
         "console_scripts": [
             "c2c-template = c2c.template:main",
