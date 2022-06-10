@@ -1,5 +1,5 @@
 vars:
-    var: '{test}'
+  var: '{test}'
 
 no_interpreted:
-    - var
+  - var

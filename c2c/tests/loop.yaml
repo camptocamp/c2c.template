@@ -1,8 +1,7 @@
 vars:
-
-    aa: '{AA}'
-    bb: '{aa}'
-    cc: '{aa} {bb}'
+  aa: '{AA}'
+  bb: '{aa}'
+  cc: '{aa} {bb}'
 
 environment:
-- AA
+  - AA

@@ -3,9 +3,9 @@ extends: c2c/tests/run-env.yaml
 vars: {}
 
 environment:
-- AA
-- FF
-- GG
-- HH
-- name: DD_EE
-  default: '66_77'
+  - AA
+  - FF
+  - GG
+  - HH
+  - name: DD_EE
+    default: '66_77'

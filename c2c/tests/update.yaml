@@ -1,9 +1,9 @@
 extends: c2c/tests/vars.yaml
 
 vars:
-    obj:
-        v2: 5
-        v3: [3, 4, 5]
+  obj:
+    v2: 5
+    v3: [3, 4, 5]
 
 update_paths:
-- obj.v3
+  - obj.v3

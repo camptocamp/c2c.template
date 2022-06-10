@@ -1,4 +1,4 @@
 vars:
-    1first: 123
-    2second: "{1first}"
-    3third: "{2second}"
+  1first: 123
+  2second: '{1first}'
+  3third: '{2second}'
