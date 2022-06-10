@@ -80,4 +80,5 @@ setup(
             "c2c-template = c2c.template:main",
         ],
     },
+    package_data={"c2c.template": ["py.typed"]},
 )
