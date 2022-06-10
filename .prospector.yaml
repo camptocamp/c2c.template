@@ -1,0 +1,22 @@
+---
+max-line-length: 110
+
+pylint:
+  disable:
+    - no-else-return # Unnecessary "else" after "return", remove the "else" and de-indent the code inside it
+    - consider-using-f-string # Use f-strings instead of concatenation
+    - too-many-branches # Too many branches
+    - too-many-locals # Too many local variables
+    - too-many-statements # Too many statements
+    - too-many-nested-blocks # Too many nested blocks
+    - too-many-arguments # Too many arguments
+    - consider-iterating-dictionary # Consider iterating over a dictionary instead of calling "items()"
+
+mypy:
+  run: true
+
+bandit:
+  run: true
+
+mccabe:
+  run: false

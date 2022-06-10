@@ -221,8 +221,7 @@ class FormatWalker:
                     if (
                         attr is not None
                         and attr not in self.formatted
-                        and attr
-                        not in self.all_environment_dict.keys()  # pylint: disable=consider-iterating-dictionary
+                        and attr not in self.all_environment_dict.keys()
                     ):
                         return current_vars, [(path, attr)]
                 self.formatted.append(path)
@@ -415,7 +414,7 @@ def _proceed(files: List[Tuple[str, str]], used_vars: Dict[str, Any], options: N
 
 
 class Engine(Protocol):
-    def __call__(self, template: str, **kwargs) -> str:
+    def __call__(self, template: str, **kwargs: Any) -> str:
         ...
 
 
