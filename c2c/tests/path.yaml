@@ -1,22 +1,22 @@
 vars:
-    path:
-        var_interpreted: 2+2
-        facter_json: |
-            echo '{ "osfamily": "Debian" }'
-        facter_yaml: |
-            echo 'osfamily: Debian'
-        pi: console.log(Math.PI.toPrecision(3))
+  path:
+    var_interpreted: 2+2
+    facter_json: |
+      echo '{ "osfamily": "Debian" }'
+    facter_yaml: |
+      echo 'osfamily: Debian'
+    pi: console.log(Math.PI.toPrecision(3))
 
 interpreted:
-    python:
+  python:
     - path.var_interpreted
-    bash:
+  bash:
     - path.facter_json
     - path.facter_yaml
-    json:
+  json:
     - path.facter_json
-    yaml:
+  yaml:
     - path.facter_yaml
-    node:
-        vars: ["path.pi"]
-        cmd: ["node", "-e"]
+  node:
+    vars: ['path.pi']
+    cmd: ['node', '-e']

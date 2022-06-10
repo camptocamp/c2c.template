@@ -4,4 +4,4 @@ vars:
     - name: aa
       var2: second
     - name: bb
-      var2: "2"
+      var2: '2'

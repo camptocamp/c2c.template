@@ -1,23 +1,23 @@
 vars:
-    aa: '{AA}'
-    bb:
-        cc: '{BB_CC}'
-    dd:
-        ee: '{DD_EE}'
-    ff: ee{FF}gg
-    gg:
+  aa: '{AA}'
+  bb:
+    cc: '{BB_CC}'
+  dd:
+    ee: '{DD_EE}'
+  ff: ee{FF}gg
+  gg:
     - name: ee{GG}gg
     - name: hh{GG}ii
-    hh:
+  hh:
     - ee{HH}gg
     - hh{HH}ii
-    ii: '11 {aa} 11'
+  ii: '11 {aa} 11'
 
 runtime_environment:
-- AA
-- BB_CC
-- name: DD_EE
-  default: '44_55'
-- FF
-- GG
-- HH
+  - AA
+  - BB_CC
+  - name: DD_EE
+    default: '44_55'
+  - FF
+  - GG
+  - HH

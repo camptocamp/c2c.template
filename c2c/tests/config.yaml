@@ -1,11 +1,10 @@
 vars:
-
-    aa: '{AA}'
-    bb:
-        cc: '{BB_CC}'
-    dd.ee: '{DD_EE}'
+  aa: '{AA}'
+  bb:
+    cc: '{BB_CC}'
+  dd.ee: '{DD_EE}'
 
 environment:
-- AA
-- BB_CC
-- DD_EE
+  - AA
+  - BB_CC
+  - DD_EE
