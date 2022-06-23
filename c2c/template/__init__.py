@@ -41,7 +41,7 @@ from typing import Any, Callable, Dict, List, Optional, Protocol, Set, Tuple, Un
 
 import yaml
 from yaml.parser import ParserError
-from yamlinclude import YamlIncludeConstructor
+from yamlinclude import YamlIncludeConstructor  # type: ignore
 
 try:
     from subprocess import check_output  # nosec
@@ -403,7 +403,7 @@ def set_path(item: Tuple[Dict[str, Any], str], value: str) -> None:
 
 def _proceed(files: List[Tuple[str, str]], used_vars: Dict[str, Any], options: Namespace) -> None:
     if options.engine == "jinja":
-        from bottle import jinja2_template as engine  # pylint: disable=import-outside-toplevel
+        from bottle import jinja2_template as engine  # type: ignore # pylint: disable=import-outside-toplevel
 
         bottle_template(files, used_vars, engine)
 
