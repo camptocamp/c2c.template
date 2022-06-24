@@ -3,7 +3,6 @@ name: CodeQL scanning
 
 on:
   push:
-  pull_request:
 
 jobs:
   codeql:
