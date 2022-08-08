@@ -54,7 +54,7 @@ prospector = { version = "1.7.7", extras = [
     "with_pyroma"
 ] }
 pylint = "2.14.5"
-mypy = "0.961"
+mypy = "0.971"
 flake8 = "4.0.1"
 pytest = "7.1.2"
 types-PyYAML = "6.0.10"
