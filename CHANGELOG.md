@@ -1,48 +1,5 @@
 # Changelog
 
-## [Unreleased](https://github.com/camptocamp/c2c.template/tree/HEAD)
-
-[Full Changelog](https://github.com/camptocamp/c2c.template/compare/2.3.0...HEAD)
-
-#### :books: Documentation
-
-- Add generated changelog [\#77](https://github.com/camptocamp/c2c.template/pull/77) ([sbrunner](https://github.com/sbrunner))
-
-#### :wrench: Build, CI, Tests, Code style
-
-- Update the changelog [\#89](https://github.com/camptocamp/c2c.template/pull/89) ([github-actions[bot]](https://github.com/apps/github-actions))
-- Update the changelog [\#80](https://github.com/camptocamp/c2c.template/pull/80) ([github-actions[bot]](https://github.com/apps/github-actions))
-
-#### :package: Dependencies update
-
-- Update dependency c2cciutils to v1.2.1 [\#88](https://github.com/camptocamp/c2c.template/pull/88) ([renovate[bot]](https://github.com/apps/renovate))
-- Lock file maintenance [\#87](https://github.com/camptocamp/c2c.template/pull/87) ([renovate[bot]](https://github.com/apps/renovate))
-- Lock file maintenance [\#86](https://github.com/camptocamp/c2c.template/pull/86) ([renovate[bot]](https://github.com/apps/renovate))
-- Update dependency mypy to v0.971 [\#84](https://github.com/camptocamp/c2c.template/pull/84) ([renovate[bot]](https://github.com/apps/renovate))
-- Update all patch versions \(patch\) [\#83](https://github.com/camptocamp/c2c.template/pull/83) ([renovate[bot]](https://github.com/apps/renovate))
-- Lock file maintenance [\#82](https://github.com/camptocamp/c2c.template/pull/82) ([renovate[bot]](https://github.com/apps/renovate))
-- Update all patch versions \(patch\) [\#81](https://github.com/camptocamp/c2c.template/pull/81) ([renovate[bot]](https://github.com/apps/renovate))
-- Lock file maintenance [\#79](https://github.com/camptocamp/c2c.template/pull/79) ([renovate[bot]](https://github.com/apps/renovate))
-- Update dependency poetry to v1.1.14 [\#78](https://github.com/camptocamp/c2c.template/pull/78) ([renovate[bot]](https://github.com/apps/renovate))
-- Lock file maintenance [\#76](https://github.com/camptocamp/c2c.template/pull/76) ([renovate[bot]](https://github.com/apps/renovate))
-- Update github/codeql-action action to v2 [\#75](https://github.com/camptocamp/c2c.template/pull/75) ([renovate[bot]](https://github.com/apps/renovate))
-- Update all patch versions \(patch\) [\#74](https://github.com/camptocamp/c2c.template/pull/74) ([renovate[bot]](https://github.com/apps/renovate))
-
-**Closed issues:**
-
-- Potential dependency conflicts between c2c-template and pyyaml [\#65](https://github.com/camptocamp/c2c.template/issues/65)
-- Be able to generate localised file [\#23](https://github.com/camptocamp/c2c.template/issues/23)
-- Get data from sql query [\#21](https://github.com/camptocamp/c2c.template/issues/21)
-
-**Merged pull requests:**
-
-- Modernize [\#73](https://github.com/camptocamp/c2c.template/pull/73) ([sbrunner](https://github.com/sbrunner))
-- Update actions/checkout action to v3 [\#72](https://github.com/camptocamp/c2c.template/pull/72) ([renovate[bot]](https://github.com/apps/renovate))
-- Update all patch versions [\#71](https://github.com/camptocamp/c2c.template/pull/71) ([renovate[bot]](https://github.com/apps/renovate))
-- Update dependency c2cciutils to v1.1.12 [\#70](https://github.com/camptocamp/c2c.template/pull/70) ([renovate[bot]](https://github.com/apps/renovate))
-- Configure Renovate [\#68](https://github.com/camptocamp/c2c.template/pull/68) ([sbrunner](https://github.com/sbrunner))
-- Upgrade for Python 3.6 \(with pyupgrade\) [\#67](https://github.com/camptocamp/c2c.template/pull/67) ([sbrunner](https://github.com/sbrunner))
-
 ## [2.3.0](https://github.com/camptocamp/c2c.template/tree/2.3.0) (2021-04-14)
 
 [Full Changelog](https://github.com/camptocamp/c2c.template/compare/2.2.1...2.3.0)
