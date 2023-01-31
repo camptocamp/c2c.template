@@ -17,7 +17,7 @@ description = "Vars collector and template runner."
 readme = "README.rst"
 authors = ["Camptocamp <info@camptocamp.com>"]
 repository = "https://github.com/camptocamp/c2c.template"
-license = "BSD"
+license = "BSD-2-Clause"
 keywords = ["template"]
 packages = [{ include = "c2c" }]
 classifiers = [
