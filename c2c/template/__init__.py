@@ -32,6 +32,7 @@ import json
 import logging
 import os
 import re
+import subprocess  # nosec
 import sys
 import traceback
 from argparse import ArgumentParser, Namespace
@@ -42,22 +43,6 @@ from typing import Any, Callable, Dict, List, Optional, Protocol, Set, Tuple, Un
 import yaml
 from yaml.parser import ParserError
 from yamlinclude import YamlIncludeConstructor  # type: ignore
-
-try:
-    from subprocess import check_output  # nosec
-except ImportError:  # pragma: nocover
-    from subprocess import PIPE, Popen  # nosec
-
-    def check_output(cmd, cwd=None, stdin=None, stderr=None, shell=False):  # noqa
-        """
-        Backwards compatible check_output.
-        """
-        p = Popen(  # nosec # pylint: disable=consider-using-with
-            cmd, cwd=cwd, stdin=stdin, stderr=stderr, shell=shell, stdout=PIPE
-        )
-        out, _ = p.communicate()
-        return out
-
 
 Value = Union[str, int, float, Dict[str, Any], List[Any]]
 
@@ -579,11 +564,13 @@ def do_process(used: Dict[str, Any], new_vars: Dict[str, Any]) -> Dict[str, Any]
                 cmd.append(expression)
                 try:
                     with open(os.devnull, "w", encoding="utf-8") as dev_null:
-                        return (
-                            check_output(cmd, stderr=dev_null if self.ignore_error else None)  # nosec
-                            .decode("utf-8")
-                            .strip("\n")
-                        )
+                        return subprocess.run(  # nosec
+                            cmd,
+                            stderr=dev_null if self.ignore_error else None,
+                            check=True,
+                            stdout=subprocess.PIPE,
+                            encoding="utf-8",
+                        ).stdout.strip("\n")
                 except (OSError, CalledProcessError) as e:  # pragma: nocover
                     error = "When running the expression '{}' in '{}': {}".format(expression, current_path, e)
                     LOG.error(error)
@@ -615,7 +602,9 @@ def do_process(used: Dict[str, Any], new_vars: Dict[str, Any]) -> Dict[str, Any]
 
             def __call__(self, expression: str, current_path: str) -> Value:
                 try:
-                    return check_output(expression, shell=True).decode("utf-8").strip("\n")  # nosec
+                    return subprocess.run(  # nosec
+                        expression, shell=True, check=True, stdout=subprocess.PIPE, encoding="utf-8"
+                    ).stdout.strip("\n")
                 except (OSError, CalledProcessError) as e:  # pragma: nocover
                     error = "When running the expression '{}' in [{}]: {}".format(expression, current_path, e)
                     LOG.error(error)
