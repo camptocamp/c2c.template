@@ -1,4 +1,4 @@
-# Copyright (c) 2018, Camptocamp SA
+# Copyright (c) 2018-2023, Camptocamp SA
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without
@@ -35,9 +35,7 @@ LOG = logging.getLogger(__name__)
 
 
 class _Config:
-    """
-    A central point where we can access to the application configuration.
-    """
+    """A central point where we can access to the application configuration."""
 
     _config = None  # type: Dict[str, Any]
 

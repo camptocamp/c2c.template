@@ -1,4 +1,4 @@
-# Copyright (c) 2011-2018, Camptocamp SA
+# Copyright (c) 2011-2023, Camptocamp SA
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without
@@ -25,6 +25,7 @@
 # of the authors and should not be interpreted as representing official policies,
 # either expressed or implied, of the FreeBSD Project.
 
+"""The template module."""
 
 import copy
 import itertools
@@ -165,6 +166,7 @@ class FormatWalker:
         runtime_environment: Optional[List[Dict[str, Any]]] = None,
         runtime_environment_pattern: Optional[str] = None,
     ):
+        """Initialize the walker."""
         self.formatted: List[str] = []
         self.used_vars = used_vars
         self.no_interpreted = no_interpreted

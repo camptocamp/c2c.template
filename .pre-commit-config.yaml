@@ -14,6 +14,7 @@ repos:
       - id: debug-statements
       - id: check-toml
       - id: check-yaml
+        exclude: ^c2c/tests/include\.yaml$
       - id: check-json
       - id: end-of-file-fixer
       - id: trailing-whitespace
