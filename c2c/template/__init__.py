@@ -572,7 +572,7 @@ def do_process(used: Dict[str, Any], new_vars: Dict[str, Any]) -> Dict[str, Any]
                             encoding="utf-8",
                         ).stdout.strip("\n")
                 except (OSError, CalledProcessError) as e:  # pragma: nocover
-                    error = "When running the expression '{}' in '{}': {}".format(expression, current_path, e)
+                    error = f"When running the expression '{expression}' in '{current_path}': {e}"
                     LOG.error(error)
                     if self.ignore_error:
                         return "ERROR: " + error
@@ -606,7 +606,7 @@ def do_process(used: Dict[str, Any], new_vars: Dict[str, Any]) -> Dict[str, Any]
                         expression, shell=True, check=True, stdout=subprocess.PIPE, encoding="utf-8"
                     ).stdout.strip("\n")
                 except (OSError, CalledProcessError) as e:  # pragma: nocover
-                    error = "When running the expression '{}' in [{}]: {}".format(expression, current_path, e)
+                    error = f"When running the expression '{expression}' in [{current_path}]: {e}"
                     LOG.error(error)
                     if interpreter.get("ignore_error", False):
                         return "ERROR: " + error

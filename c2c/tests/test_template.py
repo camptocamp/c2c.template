@@ -65,7 +65,7 @@ class TestTemplate(TestCase):
         ]
         main()
 
-        self.assertEquals(
+        self.assertEqual(
             open("c2c/tests/jinja").read(),
             "var1: first, var2: second\n"
             "var3: first, second, third\n"
@@ -81,7 +81,7 @@ class TestTemplate(TestCase):
         sys.argv = ["", "--engine", "mako", "--vars", "c2c/tests/vars.yaml", "--files", "c2c/tests/mako.mako"]
         main()
 
-        self.assertEquals(
+        self.assertEqual(
             open("c2c/tests/mako").read(),
             "var1: first, var2: second\n" "var3: first, second, third\n" "var_interpreted: 4\n",
         )
@@ -92,7 +92,7 @@ class TestTemplate(TestCase):
         sys.argv = ["", "--vars", "c2c/tests/vars.yaml", "--get-var", "var_interpreted", "VAR_1=var1"]
         sys.stdout = StringIO()
         main()
-        self.assertEquals(sys.stdout.getvalue(), "VAR_INTERPRETED=4\n" "VAR_1='first'\n")
+        self.assertEqual(sys.stdout.getvalue(), "VAR_INTERPRETED=4\n" "VAR_1='first'\n")
         sys.stdout = sys.__stdout__
 
     def test_gen_config(self):
@@ -111,7 +111,7 @@ class TestTemplate(TestCase):
         main()
 
         with open("config1.yaml") as config:
-            self.assertEquals(
+            self.assertEqual(
                 yaml.safe_load(config.read()),
                 {
                     "vars": {
@@ -151,7 +151,7 @@ class TestTemplate(TestCase):
         main()
 
         with open("config1.yaml") as config:
-            self.assertEquals(
+            self.assertEqual(
                 yaml.safe_load(config.read()),
                 {
                     "vars": {
@@ -173,7 +173,7 @@ class TestTemplate(TestCase):
         main()
 
         with open("config3.yaml") as config:
-            self.assertEquals(
+            self.assertEqual(
                 yaml.safe_load(config.read()),
                 {
                     "vars": {
@@ -206,10 +206,10 @@ class TestTemplate(TestCase):
         main()
 
         with open("aa.txt") as test:
-            self.assertEquals(test.read(), "var1: first\nvar2: second")
+            self.assertEqual(test.read(), "var1: first\nvar2: second")
 
         with open("bb.txt") as test:
-            self.assertEquals(test.read(), "var1: first\nvar2: 2")
+            self.assertEqual(test.read(), "var1: first\nvar2: 2")
 
     def test_builder_dict(self):
         from c2c.template import main
@@ -226,10 +226,10 @@ class TestTemplate(TestCase):
         main()
 
         with open("aa.txt") as test:
-            self.assertEquals(test.read(), "var1: first\nvar2: second")
+            self.assertEqual(test.read(), "var1: first\nvar2: second")
 
         with open("bb.txt") as test:
-            self.assertEquals(test.read(), "var1: first\nvar2: 2")
+            self.assertEqual(test.read(), "var1: first\nvar2: 2")
 
     def test_update(self):
         from c2c.template import main
@@ -238,7 +238,7 @@ class TestTemplate(TestCase):
         main()
 
         with open("config4.yaml") as config:
-            self.assertEquals(
+            self.assertEqual(
                 yaml.safe_load(config.read()),
                 {
                     "vars": {"obj": {"v1": 1, "v2": 5, "v3": [1, 2, 3, 3, 4, 5]}},
@@ -256,7 +256,7 @@ class TestTemplate(TestCase):
         main()
 
         with open("config5.yaml") as config:
-            self.assertEquals(
+            self.assertEqual(
                 yaml.safe_load(config.read()),
                 {
                     "vars": {"3third": "wanted"},
@@ -274,7 +274,7 @@ class TestTemplate(TestCase):
         main()
 
         with open("config6.yaml") as config:
-            self.assertEquals(
+            self.assertEqual(
                 yaml.safe_load(config.read()),
                 {
                     "vars": {"3third": "123"},
@@ -294,9 +294,9 @@ class TestTemplate(TestCase):
 
         config = get_config("c2c/tests/config.yaml")
 
-        self.assertEquals(config["aa"], "11")
-        self.assertEquals(config["bb"]["cc"], "22_33")
-        self.assertEquals(config["dd.ee"], "44_55")
+        self.assertEqual(config["aa"], "11")
+        self.assertEqual(config["bb"]["cc"], "22_33")
+        self.assertEqual(config["dd.ee"], "44_55")
 
     def test_loop(self):
         from c2c.template import do
@@ -313,9 +313,9 @@ class TestTemplate(TestCase):
         with open("loop.cache.yaml") as f:
             cache = yaml.safe_load(f.read())
 
-        self.assertEquals(cache["used_vars"]["aa"], "11")
-        self.assertEquals(cache["used_vars"]["bb"], "11")
-        self.assertEquals(cache["used_vars"]["cc"], "11 11")
+        self.assertEqual(cache["used_vars"]["aa"], "11")
+        self.assertEqual(cache["used_vars"]["bb"], "11")
+        self.assertEqual(cache["used_vars"]["cc"], "11 11")
 
     def test_runtime_environment(self):
         import c2c.template
@@ -344,7 +344,7 @@ class TestTemplate(TestCase):
         os.environ["HH"] = "88"
         result = c2c.template.get_config("config-env.yaml")
 
-        self.assertEquals(
+        self.assertEqual(
             result,
             {
                 "aa": "11",
@@ -385,7 +385,7 @@ class TestTemplate(TestCase):
         del os.environ["HH"]
 
         with open("config-env.yaml") as config:
-            self.assertEquals(
+            self.assertEqual(
                 yaml.safe_load(config.read()),
                 {
                     "vars": {
@@ -407,7 +407,7 @@ class TestTemplate(TestCase):
         os.environ["BB_CC"] = "22_33"
         result = c2c.template.get_config("config-env.yaml")
 
-        self.assertEquals(
+        self.assertEqual(
             result,
             {
                 "aa": "11",
@@ -456,7 +456,7 @@ class TestTemplate(TestCase):
         os.environ["HH"] = "88"
         result = c2c.template.get_config("config-env.yaml")
 
-        self.assertEquals(
+        self.assertEqual(
             result,
             {
                 "aa": "11",
@@ -486,7 +486,7 @@ class TestTemplate(TestCase):
 
         result = c2c.template.get_config("config.yaml")
 
-        self.assertEquals(
+        self.assertEqual(
             result,
             {
                 "var": "{test}",
@@ -517,7 +517,7 @@ class TestTemplate(TestCase):
         os.environ["B"] = '{"name": "toto"}'
         result = c2c.template.get_config("config.yaml")
 
-        self.assertEquals(
+        self.assertEqual(
             result,
             {
                 "a": 11,
@@ -560,7 +560,7 @@ class TestTemplate(TestCase):
         ]
         c2c.template.main()
 
-        self.assertEquals(open("c2c/tests/env.tmpl").read(), "${AA}\n")
+        self.assertEqual(open("c2c/tests/env.tmpl").read(), "${AA}\n")
 
     def test_template_missing_runtime_environment_cache(self):
         import c2c.template
@@ -609,7 +609,7 @@ class TestTemplate(TestCase):
         ]
         c2c.template.main()
 
-        self.assertEquals(open("c2c/tests/env.tmpl").read(), "${AA}\n")
+        self.assertEqual(open("c2c/tests/env.tmpl").read(), "${AA}\n")
 
     def test_include_cache(self):
         import c2c.template
@@ -623,7 +623,7 @@ class TestTemplate(TestCase):
         ]
         c2c.template.main()
 
-        self.assertEquals(
+        self.assertEqual(
             json.loads(open("cache.json").read()),
             {
                 "used_vars": {"ggg": {"a": {"c": "g"}}, "hhh": [1, 2], "iii": [{"a": {"c": "g"}}]},
