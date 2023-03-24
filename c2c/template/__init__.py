@@ -1,4 +1,4 @@
-# Copyright (c) 2011-2018, Camptocamp SA
+# Copyright (c) 2011-2023, Camptocamp SA
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without
@@ -25,6 +25,7 @@
 # of the authors and should not be interpreted as representing official policies,
 # either expressed or implied, of the FreeBSD Project.
 
+"""The template module."""
 
 import copy
 import itertools
@@ -165,6 +166,7 @@ class FormatWalker:
         runtime_environment: Optional[List[Dict[str, Any]]] = None,
         runtime_environment_pattern: Optional[str] = None,
     ):
+        """Initialize the walker."""
         self.formatted: List[str] = []
         self.used_vars = used_vars
         self.no_interpreted = no_interpreted
@@ -572,7 +574,7 @@ def do_process(used: Dict[str, Any], new_vars: Dict[str, Any]) -> Dict[str, Any]
                             encoding="utf-8",
                         ).stdout.strip("\n")
                 except (OSError, CalledProcessError) as e:  # pragma: nocover
-                    error = "When running the expression '{}' in '{}': {}".format(expression, current_path, e)
+                    error = f"When running the expression '{expression}' in '{current_path}': {e}"
                     LOG.error(error)
                     if self.ignore_error:
                         return "ERROR: " + error
@@ -606,7 +608,7 @@ def do_process(used: Dict[str, Any], new_vars: Dict[str, Any]) -> Dict[str, Any]
                         expression, shell=True, check=True, stdout=subprocess.PIPE, encoding="utf-8"
                     ).stdout.strip("\n")
                 except (OSError, CalledProcessError) as e:  # pragma: nocover
-                    error = "When running the expression '{}' in [{}]: {}".format(expression, current_path, e)
+                    error = f"When running the expression '{expression}' in [{current_path}]: {e}"
                     LOG.error(error)
                     if interpreter.get("ignore_error", False):
                         return "ERROR: " + error

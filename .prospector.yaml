@@ -12,6 +12,10 @@ pylint:
     - too-many-arguments # Too many arguments
     - consider-iterating-dictionary # Consider iterating over a dictionary instead of calling "items()"
 
+pydocstyle:
+  disable:
+    - D203 # 1 blank line required before class docstring, in conflict with black
+
 mypy:
   run: true
 
