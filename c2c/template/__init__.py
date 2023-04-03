@@ -620,7 +620,6 @@ def do_process(used: Dict[str, Any], new_vars: Dict[str, Any]) -> Dict[str, Any]
                 self.interpreter = interpreter
 
             def __call__(self, value: str, current_path: str) -> Value:
-
                 try:
                     return cast(Dict[str, Any], json.loads(value))
                 except ValueError as e:  # pragma: nocover

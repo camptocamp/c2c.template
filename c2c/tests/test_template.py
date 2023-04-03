@@ -48,7 +48,6 @@ class Options:
 
 
 class TestTemplate(TestCase):
-
     maxDiff = None
 
     def test_jinja(self):
