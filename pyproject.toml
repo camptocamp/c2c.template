@@ -1,9 +1,9 @@
 [tool.black]
 line-length = 110
-target-version = ['py38']
+target-version = ["py39"]
 
 [mypy]
-python_version = 3.8
+python_version = 3.9
 warn_redundant_casts = true
 warn_unused_ignores = true
 ignore_missing_imports = true
@@ -29,9 +29,6 @@ classifiers = [
     "Operating System :: OS Independent",
     "Topic :: Utilities",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
     "Typing :: Typed",
 ]
 include = ["tilecloud_chain/py.typed"]
@@ -40,7 +37,7 @@ include = ["tilecloud_chain/py.typed"]
 c2c-template = "c2c.template:main"
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.11"
+python = ">=3.9,<4.0"
 bottle = "0.12.25"
 Jinja2 = "3.1.2"
 Mako = "1.2.4"

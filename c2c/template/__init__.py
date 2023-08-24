@@ -39,13 +39,13 @@ import traceback
 from argparse import ArgumentParser, Namespace
 from string import Formatter
 from subprocess import CalledProcessError  # nosec
-from typing import Any, Callable, Dict, List, Optional, Protocol, Set, Tuple, Union, cast
+from typing import Any, Callable, Optional, Protocol, Union, cast
 
 import yaml
 from yaml.parser import ParserError
 from yamlinclude import YamlIncludeConstructor  # type: ignore
 
-Value = Union[str, int, float, Dict[str, Any], List[Any]]
+Value = Union[str, int, float, dict[str, Any], list[Any]]
 
 LOG = logging.getLogger(__name__)
 DOT_SPLITTER_RE = re.compile(r"(?<!\\)\.")
@@ -53,14 +53,14 @@ ESCAPE_DOT_RE = re.compile(r"\\.")
 INDEX_RE = re.compile(r"^\[([0-9]+)\]$")
 
 
-def dot_split(string: str) -> List[str]:
+def dot_split(string: str) -> list[str]:
     result = DOT_SPLITTER_RE.split(string)
     return [ESCAPE_DOT_RE.sub(".", i) for i in result if i != ""]
 
 
 def transform_path(
-    value: Dict[str, Any],
-    path: List[str],
+    value: dict[str, Any],
+    path: list[str],
     action: Callable[[str, str], Value],
     current_path: Optional[str] = "",
 ) -> None:
@@ -118,7 +118,7 @@ def transform_path(
             )
 
 
-def get_config(file_name: str) -> Dict[str, Any]:
+def get_config(file_name: str) -> dict[str, Any]:
     with open(file_name, encoding="utf-8") as f:
         config = yaml.safe_load(f.read())
     format_walker = FormatWalker(
@@ -160,14 +160,14 @@ class FormatWalker:
 
     def __init__(
         self,
-        used_vars: Dict[str, Any],
-        no_interpreted: List[str],
-        environment: List[Dict[str, Any]],
-        runtime_environment: Optional[List[Dict[str, Any]]] = None,
+        used_vars: dict[str, Any],
+        no_interpreted: list[str],
+        environment: list[dict[str, Any]],
+        runtime_environment: Optional[list[dict[str, Any]]] = None,
         runtime_environment_pattern: Optional[str] = None,
     ):
         """Initialize the walker."""
-        self.formatted: List[str] = []
+        self.formatted: list[str] = []
         self.used_vars = used_vars
         self.no_interpreted = no_interpreted
         self.environment = environment
@@ -189,15 +189,15 @@ class FormatWalker:
             else:
                 self.all_environment_dict[env["name"]] = os.environ[env["name"]]
 
-    def path_in(self, path_list: List[str], list_: List[str]) -> bool:
+    def path_in(self, path_list: list[str], list_: list[str]) -> bool:
         for path in path_list:
             if path in list_:
                 return True
         return False
 
     def format_walker(
-        self, current_vars: Dict[str, Any], path: Optional[str] = None, path_list: Optional[List[str]] = None
-    ) -> Tuple[Dict[str, Any], List[Tuple[str, str]]]:
+        self, current_vars: dict[str, Any], path: Optional[str] = None, path_list: Optional[list[str]] = None
+    ) -> tuple[dict[str, Any], list[tuple[str, str]]]:
         if isinstance(current_vars, str):
             if path not in self.formatted:
                 if self.path_in(path_list, self.no_interpreted):
@@ -249,7 +249,7 @@ class FormatWalker:
         return current_vars, []
 
     def __call__(self) -> None:
-        skip: Optional[List[Tuple[str, str]]] = None
+        skip: Optional[list[tuple[str, str]]] = None
         old_skip = sys.maxsize
         while skip is None or old_skip != len(skip) and len(skip) != 0:
             old_skip = sys.maxsize if skip is None else len(skip)
@@ -324,7 +324,7 @@ def do(options: Namespace) -> None:
         print(f"{corresp[0]}={used_vars[corresp[1]]!r}")
 
     if options.get_config is not None:
-        new_vars: Dict[str, Any] = {"vars": {}}
+        new_vars: dict[str, Any] = {"vars": {}}
         for v in options.get_config[1:]:
             var_path = v.split(".")
             value = used_vars
@@ -374,7 +374,7 @@ def do(options: Namespace) -> None:
         _proceed(files, used_vars, options)
 
 
-def get_path(value: Dict[str, Any], path: str) -> Tuple[Tuple[Optional[Dict[str, Any]], str], Dict[str, Any]]:
+def get_path(value: dict[str, Any], path: str) -> tuple[tuple[Optional[dict[str, Any]], str], dict[str, Any]]:
     split_path = dot_split(path)
     parent = None
     for element in split_path:
@@ -383,12 +383,12 @@ def get_path(value: Dict[str, Any], path: str) -> Tuple[Tuple[Optional[Dict[str,
     return (parent, split_path[-1]), value
 
 
-def set_path(item: Tuple[Dict[str, Any], str], value: str) -> None:
+def set_path(item: tuple[dict[str, Any], str], value: str) -> None:
     parent, element = item
     parent[element] = value
 
 
-def _proceed(files: List[Tuple[str, str]], used_vars: Dict[str, Any], options: Namespace) -> None:
+def _proceed(files: list[tuple[str, str]], used_vars: dict[str, Any], options: Namespace) -> None:
     if options.engine == "jinja":
         from bottle import jinja2_template as engine  # type: ignore # pylint: disable=import-outside-toplevel
 
@@ -405,7 +405,7 @@ class Engine(Protocol):
         ...
 
 
-def bottle_template(files: List[Tuple[str, str]], used_vars: Dict[str, Any], engine: Engine) -> None:
+def bottle_template(files: list[tuple[str, str]], used_vars: dict[str, Any], engine: Engine) -> None:
     for template, destination in files:
         processed = engine(template, **used_vars)
         save(template, destination, processed)
@@ -421,17 +421,17 @@ class BuildLoader(yaml.SafeLoader):
     pass
 
 
-def read_vars(vars_file: str) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+def read_vars(vars_file: str) -> tuple[dict[str, Any], dict[str, Any]]:
     YamlIncludeConstructor.add_to_loader_class(loader_class=BuildLoader, base_dir=os.path.dirname(vars_file))
     with open(vars_file, encoding="utf-8") as file_open:
-        used = cast(Dict[str, Any], yaml.load(file_open.read(), BuildLoader))  # nosec
+        used = cast(dict[str, Any], yaml.load(file_open.read(), BuildLoader))  # nosec
 
     used.setdefault("environment", [])
     used.setdefault("runtime_environment", [])
     used.setdefault("runtime_interpreted", {})
     used.setdefault("runtime_postprocess", [])
 
-    current_vars: Dict[str, Any] = {}
+    current_vars: dict[str, Any] = {}
     if "extends" in used:
         current_vars, config = read_vars(used["extends"])
 
@@ -451,7 +451,7 @@ def read_vars(vars_file: str) -> Tuple[Dict[str, Any], Dict[str, Any]]:
                 if interpreted is list and used["runtime_interpreted"][name] is list:
                     used["runtime_interpreted"][name] += interpreted
                 else:
-                    value: Dict[str, Any] = {"vars": []}
+                    value: dict[str, Any] = {"vars": []}
                     if interpreted is list:
                         value["vars"] += interpreted
                     else:
@@ -489,7 +489,7 @@ def read_vars(vars_file: str) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     return current_vars, used
 
 
-def do_process(used: Dict[str, Any], new_vars: Dict[str, Any]) -> Dict[str, Any]:
+def do_process(used: dict[str, Any], new_vars: dict[str, Any]) -> dict[str, Any]:
     globs = {
         "__builtins__": {},
         "__import__": __import__,
@@ -557,7 +557,7 @@ def do_process(used: Dict[str, Any], new_vars: Dict[str, Any]) -> Dict[str, Any]
         interpreters.sort(key=lambda v: -v["priority"])  # type: ignore
 
         class CmdAction:
-            def __init__(self, interpreter: Dict[str, Any]):
+            def __init__(self, interpreter: dict[str, Any]):
                 self.interpreter = interpreter
                 self.ignore_error = self.interpreter.get("ignore_error", False)
 
@@ -582,7 +582,7 @@ def do_process(used: Dict[str, Any], new_vars: Dict[str, Any]) -> Dict[str, Any]
                         sys.exit(1)
 
         class PythonAction:
-            def __init__(self, interpreter: Dict[str, Any]):
+            def __init__(self, interpreter: dict[str, Any]):
                 self.interpreter = interpreter
 
             def __call__(self, expression: str, current_path: str) -> Value:  # type: ignore
@@ -599,7 +599,7 @@ def do_process(used: Dict[str, Any], new_vars: Dict[str, Any]) -> Dict[str, Any]
                         sys.exit(1)
 
         class BashAction:
-            def __init__(self, interpreter: Dict[str, Any]):
+            def __init__(self, interpreter: dict[str, Any]):
                 self.interpreter = interpreter
 
             def __call__(self, expression: str, current_path: str) -> Value:
@@ -616,12 +616,12 @@ def do_process(used: Dict[str, Any], new_vars: Dict[str, Any]) -> Dict[str, Any]
                         sys.exit(1)
 
         class JsonAction:
-            def __init__(self, interpreter: Dict[str, Any]):
+            def __init__(self, interpreter: dict[str, Any]):
                 self.interpreter = interpreter
 
             def __call__(self, value: str, current_path: str) -> Value:
                 try:
-                    return cast(Dict[str, Any], json.loads(value))
+                    return cast(dict[str, Any], json.loads(value))
                 except ValueError as e:  # pragma: nocover
                     error = "When evaluating {} expression '{}' in '{}' as JSON: {}".format(
                         key, value, current_path, e
@@ -633,12 +633,12 @@ def do_process(used: Dict[str, Any], new_vars: Dict[str, Any]) -> Dict[str, Any]
                         sys.exit(1)
 
         class YamlAction:
-            def __init__(self, interpreter: Dict[str, Any]):
+            def __init__(self, interpreter: dict[str, Any]):
                 self.interpreter = interpreter
 
             def __call__(self, value: str, current_path: str) -> Value:
                 try:
-                    return cast(Dict[str, Any], yaml.safe_load(value))
+                    return cast(dict[str, Any], yaml.safe_load(value))
                 except ParserError as e:  # pragma: nocover
                     error = "When evaluating {} expression '{}' in '{}' as YAML: {}".format(
                         key, value, current_path, e
@@ -672,7 +672,7 @@ def do_process(used: Dict[str, Any], new_vars: Dict[str, Any]) -> Dict[str, Any]
                     sys.exit(1)
 
     class PostprocessAction:
-        def __init__(self, postprocess: Dict[str, Any]) -> None:
+        def __init__(self, postprocess: dict[str, Any]) -> None:
             self.postprocess = postprocess
 
         def __call__(self, value: str, current_path: str) -> Value:  # type: ignore
@@ -702,9 +702,9 @@ def do_process(used: Dict[str, Any], new_vars: Dict[str, Any]) -> Dict[str, Any]
 
 
 def update_vars(
-    current_vars: Dict[str, Any],
-    new_vars: Dict[str, Any],
-    update_paths: Set[str],
+    current_vars: dict[str, Any],
+    new_vars: dict[str, Any],
+    update_paths: set[str],
     path: Optional[str] = None,
 ) -> None:
     for key, value in new_vars.items():
