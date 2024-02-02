@@ -295,9 +295,11 @@ def do(options: Namespace) -> None:
             config.get("no_interpreted", []),
             config.get("environment", []),
             config.get("runtime_environment", []),
-            "{{{}}}"
-            if options.get_config is not None or options.get_cache is not None
-            else options.runtime_environment_pattern,
+            (
+                "{{{}}}"
+                if options.get_config is not None or options.get_cache is not None
+                else options.runtime_environment_pattern
+            ),
         )
         format_walker()
         used_vars = format_walker.used_vars
@@ -401,8 +403,7 @@ def _proceed(files: list[tuple[str, str]], used_vars: dict[str, Any], options: N
 
 
 class Engine(Protocol):
-    def __call__(self, template: str, **kwargs: Any) -> str:
-        ...
+    def __call__(self, template: str, **kwargs: Any) -> str: ...
 
 
 def bottle_template(files: list[tuple[str, str]], used_vars: dict[str, Any], engine: Engine) -> None:
