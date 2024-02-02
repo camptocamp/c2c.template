@@ -1,29 +1,8 @@
 inherits:
   - duplicated
-max-line-length: 110
+  - utils:base
+  - utils:no-design-checks
 
-pylint:
+pycodestyle:
   disable:
-    - no-else-return # Unnecessary "else" after "return", remove the "else" and de-indent the code inside it
-    - too-many-branches # Too many branches
-    - too-many-locals # Too many local variables
-    - too-many-statements # Too many statements
-    - too-many-nested-blocks # Too many nested blocks
-    - too-many-arguments # Too many arguments
-    - consider-iterating-dictionary # Consider iterating over a dictionary instead of calling "items()"
-
-pydocstyle:
-  disable:
-    - D203 # 1 blank line required before class docstring, in conflict with black
-
-mypy:
-  run: true
-
-bandit:
-  run: true
-
-pyroma:
-  run: true
-
-mccabe:
-  run: false
+    - E704 # multiple statements on one line (def) (not compatible with protocol)

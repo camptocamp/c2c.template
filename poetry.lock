@@ -752,6 +752,17 @@ files = [
 ]
 
 [[package]]
+name = "prospector-profile-utils"
+version = "1.7.2"
+description = "Some utility Prospector profiles."
+optional = false
+python-versions = "*"
+files = [
+    {file = "prospector_profile_utils-1.7.2-py2.py3-none-any.whl", hash = "sha256:b22f391258c8baff67a56c93fccabd0a62a637572330ca6b520586065cd7912d"},
+    {file = "prospector_profile_utils-1.7.2.tar.gz", hash = "sha256:200f955d4c506e1ed2b111d986062ef54c01879889809b505aaebdb17dfe3622"},
+]
+
+[[package]]
 name = "pycodestyle"
 version = "2.11.1"
 description = "Python style guide checker"
@@ -1343,4 +1354,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<4.0"
-content-hash = "a4ecef12c88cfab166b1a6236f76bc925ca2eefa792121ce0aa44cd7eed01b3a"
+content-hash = "d4f9256c00d33f7758d23971124cd5f92d4eee01629856d7361aaba34d8757cc"
