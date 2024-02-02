@@ -68,11 +68,11 @@ def transform_path(
     key = path[0]
     if isinstance(value, list) and key == "[]":
         if len(path) == 1:
-            for i, v in enumerate(value):
-                value[i] = action(v, f"{current_path}[{i}]")
+            for index, val in enumerate(value):
+                value[index] = action(val, f"{current_path}[{index}]")
         else:
-            for i, v in enumerate(value):
-                transform_path(v, path[1:], action, f"{current_path}[{i}]")
+            for index, val in enumerate(value):
+                transform_path(val, path[1:], action, f"{current_path}[{index}]")
     else:
         if isinstance(value, dict):
             if key not in value:
@@ -119,8 +119,8 @@ def transform_path(
 
 
 def get_config(file_name: str) -> dict[str, Any]:
-    with open(file_name, encoding="utf-8") as f:
-        config = yaml.safe_load(f.read())
+    with open(file_name, encoding="utf-8") as config_file:
+        config = yaml.safe_load(config_file.read())
     format_walker = FormatWalker(
         config["vars"], config.get("no_interpreted", []), config.get("environment", [])
     )
@@ -208,7 +208,7 @@ class FormatWalker:
                     if (
                         attr is not None
                         and attr not in self.formatted
-                        and attr not in self.all_environment_dict.keys()
+                        and attr not in self.all_environment_dict
                     ):
                         return current_vars, [(path, attr)]
                 self.formatted.append(path)
@@ -263,7 +263,7 @@ class FormatWalker:
             sys.exit(1)
 
 
-def do(options: Namespace) -> None:
+def do(options: Namespace) -> None:  # pylint: disable=invalid-name
     if options.cache is not None and options.vars is not None:
         LOG.error("The --vars and --cache options cannot be used together")
         sys.exit(1)
@@ -327,16 +327,16 @@ def do(options: Namespace) -> None:
 
     if options.get_config is not None:
         new_vars: dict[str, Any] = {"vars": {}}
-        for v in options.get_config[1:]:
-            var_path = v.split(".")
+        for variable in options.get_config[1:]:
+            var_path = variable.split(".")
             value = used_vars
             for key in var_path:
                 if key in value:
                     value = value[key]
                 else:
-                    LOG.warning("The variable '%s' don't exists", v)
+                    LOG.warning("The variable '%s' don't exists", variable)
 
-            new_vars["vars"][v] = value
+            new_vars["vars"][variable] = value
         new_vars["environment"] = [
             {"name": env} if isinstance(env, str) else env for env in config.get("runtime_environment", [])
         ]
@@ -443,10 +443,10 @@ def read_vars(vars_file: str) -> tuple[dict[str, Any], dict[str, Any]]:
 
         environment = config["environment"]
         runtime_environment = config["runtime_environment"]
-        for e in used["runtime_environment"]:
-            if e in environment:
-                environment.remove(e)
-            runtime_environment.append(e)
+        for env in used["runtime_environment"]:
+            if env in environment:
+                environment.remove(env)
+            runtime_environment.append(env)
         for name, interpreted in config.get("runtime_interpreted", {}).items():
             if name in used["runtime_interpreted"]:
                 if interpreted is list and used["runtime_interpreted"][name] is list:
@@ -472,10 +472,10 @@ def read_vars(vars_file: str) -> tuple[dict[str, Any], dict[str, Any]]:
             else:
                 used["runtime_interpreted"][name] = interpreted
         used["runtime_postprocess"] += config.get("runtime_postprocess", [])
-        for e in used["environment"]:
-            if e in runtime_environment:
-                runtime_environment.remove(e)
-            environment.append(e)
+        for env in used["environment"]:
+            if env in runtime_environment:
+                runtime_environment.remove(env)
+            environment.append(env)
         used["environment"] = environment
         used["runtime_environment"] = runtime_environment
 
@@ -574,8 +574,8 @@ def do_process(used: dict[str, Any], new_vars: dict[str, Any]) -> dict[str, Any]
                             stdout=subprocess.PIPE,
                             encoding="utf-8",
                         ).stdout.strip("\n")
-                except (OSError, CalledProcessError) as e:  # pragma: nocover
-                    error = f"When running the expression '{expression}' in '{current_path}': {e}"
+                except (OSError, CalledProcessError) as exception:  # pragma: nocover
+                    error = f"When running the expression '{expression}' in '{current_path}': {exception}"
                     LOG.error(error)
                     if self.ignore_error:
                         return "ERROR: " + error
@@ -589,7 +589,7 @@ def do_process(used: dict[str, Any], new_vars: dict[str, Any]) -> dict[str, Any]
             def __call__(self, expression: str, current_path: str) -> Value:  # type: ignore
                 try:
                     return cast(Value, eval(expression, globs))  # nosec # pylint: disable=eval-used
-                except Exception:  # pragma: nocover
+                except Exception:  # pragma: nocover # pylint: disable=broad-except
                     error = "When evaluating {} expression '{}' in '{}' as Python:\n{}".format(
                         var_name, expression, current_path, traceback.format_exc()
                     )
@@ -608,8 +608,8 @@ def do_process(used: dict[str, Any], new_vars: dict[str, Any]) -> dict[str, Any]
                     return subprocess.run(  # nosec
                         expression, shell=True, check=True, stdout=subprocess.PIPE, encoding="utf-8"
                     ).stdout.strip("\n")
-                except (OSError, CalledProcessError) as e:  # pragma: nocover
-                    error = f"When running the expression '{expression}' in [{current_path}]: {e}"
+                except (OSError, CalledProcessError) as exception:  # pragma: nocover
+                    error = f"When running the expression '{expression}' in [{current_path}]: {exception}"
                     LOG.error(error)
                     if interpreter.get("ignore_error", False):
                         return "ERROR: " + error
@@ -623,9 +623,9 @@ def do_process(used: dict[str, Any], new_vars: dict[str, Any]) -> dict[str, Any]
             def __call__(self, value: str, current_path: str) -> Value:
                 try:
                     return cast(dict[str, Any], json.loads(value))
-                except ValueError as e:  # pragma: nocover
+                except ValueError as exception:  # pragma: nocover
                     error = "When evaluating {} expression '{}' in '{}' as JSON: {}".format(
-                        key, value, current_path, e
+                        key, value, current_path, exception
                     )
                     LOG.error(error)
                     if interpreter.get("ignore_error", False):
@@ -640,9 +640,9 @@ def do_process(used: dict[str, Any], new_vars: dict[str, Any]) -> dict[str, Any]
             def __call__(self, value: str, current_path: str) -> Value:
                 try:
                     return cast(dict[str, Any], yaml.safe_load(value))
-                except ParserError as e:  # pragma: nocover
+                except ParserError as exception:  # pragma: nocover
                     error = "When evaluating {} expression '{}' in '{}' as YAML: {}".format(
-                        key, value, current_path, e
+                        key, value, current_path, exception
                     )
                     LOG.error(error)
                     if self.interpreter.get("ignore_error", False):
@@ -681,9 +681,9 @@ def do_process(used: dict[str, Any], new_vars: dict[str, Any]) -> dict[str, Any]
             expression = expression.format(repr(value))
             try:
                 return cast(Value, eval(expression, globs))  # nosec # pylint: disable=eval-used
-            except ValueError as e:  # pragma: nocover
+            except ValueError as exception:  # pragma: nocover
                 error = "When interpreting the expression '{}' in '{}': {}".format(
-                    expression, current_path, e
+                    expression, current_path, exception
                 )
                 LOG.error(error)
                 if ignore_error:
