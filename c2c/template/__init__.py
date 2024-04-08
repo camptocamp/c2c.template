@@ -42,8 +42,8 @@ from subprocess import CalledProcessError  # nosec
 from typing import Any, Callable, Optional, Protocol, Union, cast
 
 import yaml
+import yaml_include  # type: ignore
 from yaml.parser import ParserError
-from yamlinclude import YamlIncludeConstructor  # type: ignore
 
 Value = Union[str, int, float, dict[str, Any], list[Any]]
 
@@ -418,14 +418,12 @@ def save(template: str, destination: str, processed: str) -> None:
     os.chmod(destination, os.stat(template).st_mode)
 
 
-class BuildLoader(yaml.SafeLoader):
-    pass
-
-
 def read_vars(vars_file: str) -> tuple[dict[str, Any], dict[str, Any]]:
-    YamlIncludeConstructor.add_to_loader_class(loader_class=BuildLoader, base_dir=os.path.dirname(vars_file))
+    include_tag = yaml_include.Constructor(base_dir=os.path.dirname(vars_file))
+    yaml.SafeLoader.add_constructor("!inc", include_tag)
+    yaml.SafeLoader.add_constructor("!include", include_tag)
     with open(vars_file, encoding="utf-8") as file_open:
-        used = cast(dict[str, Any], yaml.load(file_open.read(), BuildLoader))  # nosec
+        used = cast(dict[str, Any], yaml.load(file_open.read(), yaml.SafeLoader))  # nosec
 
     used.setdefault("environment", [])
     used.setdefault("runtime_environment", [])
