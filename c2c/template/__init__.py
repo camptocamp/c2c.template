@@ -258,7 +258,7 @@ class FormatWalker:
         if len(skip) > 0:
             LOG.error(
                 "The following variable isn't correctly interpreted due missing dependency:\n%s",
-                "\n".join(["'{}' depend on '{}'".format(*e) for e in skip]),
+                "\n".join([f"'{e[0]}' depend on '{e[1]}'" for e in skip]),
             )
             sys.exit(1)
 
