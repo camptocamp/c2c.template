@@ -1053,13 +1053,13 @@ files = [
 
 [[package]]
 name = "pyyaml-include"
-version = "2.0.2.post1"
+version = "2.1"
 description = "An extending constructor of PyYAML: include other YAML files into current YAML document"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pyyaml_include-2.0.2.post1-py3-none-any.whl", hash = "sha256:207795079b894303d32751fef7753e0be1bef842f48999df86f21d62624ae0aa"},
-    {file = "pyyaml_include-2.0.2.post1.tar.gz", hash = "sha256:a261ea4e0f3f38079ccd7e1f74a92ca8c84dd696122c3f7f092f063eb9b8db60"},
+    {file = "pyyaml_include-2.1-py3-none-any.whl", hash = "sha256:f64e6dd18961450c26977e4416466662246b55d5e57953df8e7e30bbb4e18f42"},
+    {file = "pyyaml_include-2.1.tar.gz", hash = "sha256:800304da30a3686f2cadbd9888cc46db782ba3712870a723916b193368b5c4da"},
 ]
 
 [package.dependencies]
@@ -1379,4 +1379,4 @@ test = ["big-O", "jaraco.functools", "jaraco.itertools", "jaraco.test", "more-it
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<4.0"
-content-hash = "7d2d9665a6538dc17389e76ec9714fd56f6bdc3de37c9778b084a02b22250dbf"
+content-hash = "e9b195f3b27fd71046f841d5c956d29a8efb4666a208853afb974647a75ec87b"
