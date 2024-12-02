@@ -1,8 +1,16 @@
 inherits:
   - duplicated
   - utils:base
+  - utils:fix
   - utils:no-design-checks
+  - utils:unsafe
 
 pycodestyle:
   disable:
     - E704 # multiple statements on one line (def) (not compatible with protocol)
+
+ruff:
+  disable:
+    - D101 # Missing docstring in public class
+    - D102 # Missing docstring in public method
+    - D103 # Missing docstring in public function

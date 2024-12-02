@@ -42,7 +42,7 @@ from subprocess import CalledProcessError  # nosec
 from typing import Any, Callable, Optional, Protocol, Union, cast
 
 import yaml
-import yaml_include  # type: ignore
+import yaml_include
 from yaml.parser import ParserError
 
 Value = Union[str, int, float, dict[str, Any], list[Any]]
@@ -80,7 +80,7 @@ def transform_path(
                     "The key '%s' in '%s' is not present in: [%s]",
                     key,
                     current_path,
-                    ", ".join([f"'{k}'" for k in value.keys()]),
+                    ", ".join([f"'{k}'" for k in value]),
                 )
             else:
                 if len(path) == 1:
@@ -190,10 +190,7 @@ class FormatWalker:
                 self.all_environment_dict[env["name"]] = os.environ[env["name"]]
 
     def path_in(self, path_list: list[str], list_: list[str]) -> bool:
-        for path in path_list:
-            if path in list_:
-                return True
-        return False
+        return any(path in list_ for path in path_list)
 
     def format_walker(
         self, current_vars: dict[str, Any], path: Optional[str] = None, path_list: Optional[list[str]] = None
@@ -231,7 +228,7 @@ class FormatWalker:
 
         elif isinstance(current_vars, dict):
             skip = []
-            for key in current_vars.keys():
+            for key in current_vars:
                 if path is None:
                     current_path = key
                     current_path_list = [key]
@@ -392,12 +389,16 @@ def set_path(item: tuple[dict[str, Any], str], value: str) -> None:
 
 def _proceed(files: list[tuple[str, str]], used_vars: dict[str, Any], options: Namespace) -> None:
     if options.engine == "jinja":
-        from bottle import jinja2_template as engine  # type: ignore # pylint: disable=import-outside-toplevel
+        from bottle import (  # pylint: disable=import-outside-toplevel
+            jinja2_template as engine,
+        )
 
         bottle_template(files, used_vars, engine)
 
     elif options.engine == "mako":
-        from bottle import mako_template as engine  # pylint: disable=import-outside-toplevel
+        from bottle import (  # pylint: disable=import-outside-toplevel
+            mako_template as engine,
+        )
 
         bottle_template(files, used_vars, engine)
 
@@ -553,7 +554,7 @@ def do_process(used: dict[str, Any], new_vars: dict[str, Any]) -> dict[str, Any]
                 }
             interpreters.append(interpreter)
 
-        interpreters.sort(key=lambda v: -v["priority"])  # type: ignore
+        interpreters.sort(key=lambda v: -v["priority"])
 
         class CmdAction:
             def __init__(self, interpreter: dict[str, Any]):
@@ -584,13 +585,11 @@ def do_process(used: dict[str, Any], new_vars: dict[str, Any]) -> dict[str, Any]
             def __init__(self, interpreter: dict[str, Any]):
                 self.interpreter = interpreter
 
-            def __call__(self, expression: str, current_path: str) -> Value:  # type: ignore
+            def __call__(self, expression: str, current_path: str) -> Value:
                 try:
-                    return cast(Value, eval(expression, globs))  # nosec # pylint: disable=eval-used
+                    return cast(Value, eval(expression, globs))  # nosec # pylint: disable=eval-used # noqa: S307
                 except Exception:  # pragma: nocover # pylint: disable=broad-except
-                    error = "When evaluating {} expression '{}' in '{}' as Python:\n{}".format(
-                        var_name, expression, current_path, traceback.format_exc()
-                    )
+                    error = f"When evaluating {var_name} expression '{expression}' in '{current_path}' as Python:\n{traceback.format_exc()}"
                     LOG.error(error)
                     if interpreter.get("ignore_error", False):
                         return "ERROR: " + error
@@ -622,8 +621,8 @@ def do_process(used: dict[str, Any], new_vars: dict[str, Any]) -> dict[str, Any]
                 try:
                     return cast(dict[str, Any], json.loads(value))
                 except ValueError as exception:  # pragma: nocover
-                    error = "When evaluating {} expression '{}' in '{}' as JSON: {}".format(
-                        key, value, current_path, exception
+                    error = (
+                        f"When evaluating {key} expression '{value}' in '{current_path}' as JSON: {exception}"
                     )
                     LOG.error(error)
                     if interpreter.get("ignore_error", False):
@@ -639,8 +638,8 @@ def do_process(used: dict[str, Any], new_vars: dict[str, Any]) -> dict[str, Any]
                 try:
                     return cast(dict[str, Any], yaml.safe_load(value))
                 except ParserError as exception:  # pragma: nocover
-                    error = "When evaluating {} expression '{}' in '{}' as YAML: {}".format(
-                        key, value, current_path, exception
+                    error = (
+                        f"When evaluating {key} expression '{value}' in '{current_path}' as YAML: {exception}"
                     )
                     LOG.error(error)
                     if self.interpreter.get("ignore_error", False):
@@ -674,15 +673,13 @@ def do_process(used: dict[str, Any], new_vars: dict[str, Any]) -> dict[str, Any]
         def __init__(self, postprocess: dict[str, Any]) -> None:
             self.postprocess = postprocess
 
-        def __call__(self, value: str, current_path: str) -> Value:  # type: ignore
+        def __call__(self, value: str, current_path: str) -> Value:
             expression = self.postprocess["expression"]  # [:] to clone
             expression = expression.format(repr(value))
             try:
-                return cast(Value, eval(expression, globs))  # nosec # pylint: disable=eval-used
+                return cast(Value, eval(expression, globs))  # nosec # pylint: disable=eval-used # noqa: S307
             except ValueError as exception:  # pragma: nocover
-                error = "When interpreting the expression '{}' in '{}': {}".format(
-                    expression, current_path, exception
-                )
+                error = f"When interpreting the expression '{expression}' in '{current_path}': {exception}"
                 LOG.error(error)
                 if ignore_error:
                     return "ERROR: " + error
