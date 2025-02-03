@@ -1,4 +1,4 @@
-# Copyright (c) 2011-2023, Camptocamp SA
+# Copyright (c) 2011-2025, Camptocamp SA
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without
@@ -82,7 +82,7 @@ class TestTemplate(TestCase):
 
         self.assertEqual(
             open("c2c/tests/mako").read(),
-            "var1: first, var2: second\n" "var3: first, second, third\n" "var_interpreted: 4\n",
+            "var1: first, var2: second\nvar3: first, second, third\nvar_interpreted: 4\n",
         )
 
     def test_get_var(self):
@@ -91,7 +91,7 @@ class TestTemplate(TestCase):
         sys.argv = ["", "--vars", "c2c/tests/vars.yaml", "--get-var", "var_interpreted", "VAR_1=var1"]
         sys.stdout = StringIO()
         main()
-        self.assertEqual(sys.stdout.getvalue(), "VAR_INTERPRETED=4\n" "VAR_1='first'\n")
+        self.assertEqual(sys.stdout.getvalue(), "VAR_INTERPRETED=4\nVAR_1='first'\n")
         sys.stdout = sys.__stdout__
 
     def test_gen_config(self):
