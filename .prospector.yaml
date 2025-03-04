@@ -4,10 +4,16 @@ inherits:
   - utils:fix
   - utils:no-design-checks
 
-pycodestyle:
-  disable:
-    - E704 # multiple statements on one line (def) (not compatible with protocol)
+mypy:
+  options:
+    python-version: '3.9'
 
 ruff:
   disable:
     - PTH # pathlib
+  options:
+    target-version: py39
+
+pycodestyle:
+  disable:
+    - E704 # multiple statements on one line (def) (not compatible with protocol)
