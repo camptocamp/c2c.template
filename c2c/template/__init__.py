@@ -178,12 +178,12 @@ class FormatWalker:
         if runtime_environment_pattern is not None:
             for env in self.runtime_environment:
                 if isinstance(env, str):
-                    env = {"name": env}
+                    env = {"name": env}  # noqa: PLW2901
                 self.all_environment_dict[env["name"]] = runtime_environment_pattern.format(env["name"])
 
         for env in environment:
             if isinstance(env, str):
-                env = {"name": env}
+                env = {"name": env}  # noqa: PLW2901
 
             if "default" in env:
                 self.all_environment_dict[env["name"]] = os.environ.get(env["name"], env["default"])
@@ -232,7 +232,7 @@ class FormatWalker:
 
         if isinstance(current_vars, dict):
             skip = []
-            for key in current_vars:
+            for key in current_vars:  # noqa: PLC0206
                 if path is None:
                     current_path = key
                     current_path_list = [key]
@@ -251,7 +251,7 @@ class FormatWalker:
     def __call__(self) -> None:
         skip: Optional[list[tuple[str, str]]] = None
         old_skip = sys.maxsize
-        while skip is None or old_skip != len(skip) and len(skip) != 0:
+        while skip is None or (old_skip != len(skip) and len(skip) != 0):
             old_skip = sys.maxsize if skip is None else len(skip)
             self.used_vars, skip = self.format_walker(self.used_vars)
 
@@ -550,7 +550,7 @@ def do_process(used: dict[str, Any], new_vars: dict[str, Any]) -> dict[str, Any]
                 if "priority" not in interpreter:
                     interpreter["priority"] = 0 if key in ["json", "yaml"] else 100
             else:
-                interpreter = {
+                interpreter = {  # noqa: PLW2901
                     "name": key,
                     "vars": interpreter,
                     "priority": 0 if key in ["json", "yaml"] else 100,
