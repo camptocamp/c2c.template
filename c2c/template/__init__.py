@@ -1,4 +1,4 @@
-# Copyright (c) 2011-2024, Camptocamp SA
+# Copyright (c) 2011-2025, Camptocamp SA
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without
@@ -73,56 +73,53 @@ def transform_path(
         else:
             for index, val in enumerate(value):
                 transform_path(val, path[1:], action, f"{current_path}[{index}]")
-    else:
-        if isinstance(value, dict):
-            if key not in value:
+    elif isinstance(value, dict):
+        if key not in value:
+            LOG.warning(
+                "The key '%s' in '%s' is not present in: [%s]",
+                key,
+                current_path,
+                ", ".join([f"'{k}'" for k in value]),
+            )
+        elif len(path) == 1:
+            value[key] = action(value[key], f"{current_path}.{path[0]}")
+        else:
+            transform_path(value[key], path[1:], action, f"{current_path}.{path[0]}")
+
+    elif isinstance(value, list):
+
+        def replace(path, current_path, value, index) -> None:
+            if index >= len(value):
                 LOG.warning(
                     "The key '%s' in '%s' is not present in: [%s]",
                     key,
                     current_path,
-                    ", ".join([f"'{k}'" for k in value]),
+                    f"0..{len(value) - 1}",
                 )
+            elif len(path) == 1:
+                value[index] = action(value[index], f"{current_path}[{index}]")
             else:
-                if len(path) == 1:
-                    value[key] = action(value[key], f"{current_path}.{path[0]}")
-                else:
-                    transform_path(value[key], path[1:], action, f"{current_path}.{path[0]}")
+                transform_path(value[index], path[1:], action, f"{current_path}[{index}]")
 
-        elif isinstance(value, list):
-
-            def replace(path, current_path, value, index):
-                if index >= len(value):
-                    LOG.warning(
-                        "The key '%s' in '%s' is not present in: [%s]",
-                        key,
-                        current_path,
-                        f"0..{len(value) - 1}",
-                    )
-                else:
-                    if len(path) == 1:
-                        value[index] = action(value[index], f"{current_path}[{index}]")
-                    else:
-                        transform_path(value[index], path[1:], action, f"{current_path}[{index}]")
-
-            if path[0] == "[]":
-                for index in range(len(value)):
-                    replace(path, current_path, value, index)
-            elif INDEX_RE.match(path[0]):
-                index = int(INDEX_RE.match(path[0]).group(1))
+        if path[0] == "[]":
+            for index in range(len(value)):
                 replace(path, current_path, value, index)
-            else:
-                LOG.warning("The key '%s' in '%s' is not valid for list", key, current_path)
+        elif INDEX_RE.match(path[0]):
+            index = int(INDEX_RE.match(path[0]).group(1))
+            replace(path, current_path, value, index)
         else:
-            LOG.warning(
-                "The value '%s' in '%s' is not valid, it should be a list or a dict", value, current_path
-            )
+            LOG.warning("The key '%s' in '%s' is not valid for list", key, current_path)
+    else:
+        LOG.warning("The value '%s' in '%s' is not valid, it should be a list or a dict", value, current_path)
 
 
 def get_config(file_name: str) -> dict[str, Any]:
     with open(file_name, encoding="utf-8") as config_file:
         config = yaml.safe_load(config_file.read())
     format_walker = FormatWalker(
-        config["vars"], config.get("no_interpreted", []), config.get("environment", [])
+        config["vars"],
+        config.get("no_interpreted", []),
+        config.get("environment", []),
     )
     format_walker()
     return do_process(config, format_walker.used_vars)
@@ -132,7 +129,11 @@ def main() -> None:
     logging.basicConfig(format="%(levelname)s:%(name)s:%(funcName)s:%(message)s")
     parser = ArgumentParser(description="Used to run a template")
     parser.add_argument(
-        "--engine", "-e", choices=["jinja", "mako"], default="jinja", help="the used template engine"
+        "--engine",
+        "-e",
+        choices=["jinja", "mako"],
+        default="jinja",
+        help="the used template engine",
     )
     parser.add_argument("--vars", "-c", help="the YAML file defining the variables")
     parser.add_argument("--cache", help="the generated cache file")
@@ -165,7 +166,7 @@ class FormatWalker:
         environment: list[dict[str, Any]],
         runtime_environment: Optional[list[dict[str, Any]]] = None,
         runtime_environment_pattern: Optional[str] = None,
-    ):
+    ) -> None:
         """Initialize the walker."""
         self.formatted: list[str] = []
         self.used_vars = used_vars
@@ -177,12 +178,12 @@ class FormatWalker:
         if runtime_environment_pattern is not None:
             for env in self.runtime_environment:
                 if isinstance(env, str):
-                    env = {"name": env}
+                    env = {"name": env}  # noqa: PLW2901
                 self.all_environment_dict[env["name"]] = runtime_environment_pattern.format(env["name"])
 
         for env in environment:
             if isinstance(env, str):
-                env = {"name": env}
+                env = {"name": env}  # noqa: PLW2901
 
             if "default" in env:
                 self.all_environment_dict[env["name"]] = os.environ.get(env["name"], env["default"])
@@ -193,7 +194,10 @@ class FormatWalker:
         return any(path in list_ for path in path_list)
 
     def format_walker(
-        self, current_vars: dict[str, Any], path: Optional[str] = None, path_list: Optional[list[str]] = None
+        self,
+        current_vars: dict[str, Any],
+        path: Optional[str] = None,
+        path_list: Optional[list[str]] = None,
     ) -> tuple[dict[str, Any], list[tuple[str, str]]]:
         if isinstance(current_vars, str):
             if path not in self.formatted:
@@ -215,7 +219,7 @@ class FormatWalker:
                 return current_vars.format(**vars_), []
             return current_vars, []
 
-        elif isinstance(current_vars, list):
+        if isinstance(current_vars, list):
             formatteds = []
             for index, var in enumerate(current_vars):
                 new_path = f"{path}[{index}]"
@@ -226,9 +230,9 @@ class FormatWalker:
                 formatteds.append(self.format_walker(var, new_path, new_path_list))
             return [v for v, _ in formatteds], list(itertools.chain(*(s for _, s in formatteds)))
 
-        elif isinstance(current_vars, dict):
+        if isinstance(current_vars, dict):
             skip = []
-            for key in current_vars:
+            for key in current_vars:  # noqa: PLC0206
                 if path is None:
                     current_path = key
                     current_path_list = [key]
@@ -240,15 +244,14 @@ class FormatWalker:
                 current_vars[key] = current_formatted[0]
                 skip += current_formatted[1]
             return current_vars, skip
-        else:
-            self.formatted.append(path)
+        self.formatted.append(path)
 
         return current_vars, []
 
     def __call__(self) -> None:
         skip: Optional[list[tuple[str, str]]] = None
         old_skip = sys.maxsize
-        while skip is None or old_skip != len(skip) and len(skip) != 0:
+        while skip is None or (old_skip != len(skip) and len(skip) != 0):
             old_skip = sys.maxsize if skip is None else len(skip)
             self.used_vars, skip = self.format_walker(self.used_vars)
 
@@ -547,7 +550,7 @@ def do_process(used: dict[str, Any], new_vars: dict[str, Any]) -> dict[str, Any]
                 if "priority" not in interpreter:
                     interpreter["priority"] = 0 if key in ["json", "yaml"] else 100
             else:
-                interpreter = {
+                interpreter = {  # noqa: PLW2901
                     "name": key,
                     "vars": interpreter,
                     "priority": 0 if key in ["json", "yaml"] else 100,
@@ -557,7 +560,7 @@ def do_process(used: dict[str, Any], new_vars: dict[str, Any]) -> dict[str, Any]
         interpreters.sort(key=lambda v: -v["priority"])
 
         class CmdAction:
-            def __init__(self, interpreter: dict[str, Any]):
+            def __init__(self, interpreter: dict[str, Any]) -> None:
                 self.interpreter = interpreter
                 self.ignore_error = self.interpreter.get("ignore_error", False)
 
@@ -575,46 +578,47 @@ def do_process(used: dict[str, Any], new_vars: dict[str, Any]) -> dict[str, Any]
                         ).stdout.strip("\n")
                 except (OSError, CalledProcessError) as exception:  # pragma: nocover
                     error = f"When running the expression '{expression}' in '{current_path}': {exception}"
-                    LOG.error(error)
+                    LOG.exception(error)
                     if self.ignore_error:
                         return "ERROR: " + error
-                    else:
-                        sys.exit(1)
+                    sys.exit(1)
 
         class PythonAction:
-            def __init__(self, interpreter: dict[str, Any]):
+            def __init__(self, interpreter: dict[str, Any]) -> None:
                 self.interpreter = interpreter
 
             def __call__(self, expression: str, current_path: str) -> Value:
                 try:
-                    return cast(Value, eval(expression, globs))  # nosec # pylint: disable=eval-used # noqa: S307
+                    return cast(Value, eval(expression, globs))  # nosec # pylint: disable=eval-used
                 except Exception:  # pragma: nocover # pylint: disable=broad-except
                     error = f"When evaluating {var_name} expression '{expression}' in '{current_path}' as Python:\n{traceback.format_exc()}"
-                    LOG.error(error)
+                    LOG.exception(error)
                     if interpreter.get("ignore_error", False):
                         return "ERROR: " + error
-                    else:
-                        sys.exit(1)
+                    sys.exit(1)
 
         class BashAction:
-            def __init__(self, interpreter: dict[str, Any]):
+            def __init__(self, interpreter: dict[str, Any]) -> None:
                 self.interpreter = interpreter
 
             def __call__(self, expression: str, current_path: str) -> Value:
                 try:
                     return subprocess.run(  # nosec
-                        expression, shell=True, check=True, stdout=subprocess.PIPE, encoding="utf-8"
+                        expression,
+                        shell=True,
+                        check=True,
+                        stdout=subprocess.PIPE,
+                        encoding="utf-8",
                     ).stdout.strip("\n")
                 except (OSError, CalledProcessError) as exception:  # pragma: nocover
                     error = f"When running the expression '{expression}' in [{current_path}]: {exception}"
-                    LOG.error(error)
+                    LOG.exception(error)
                     if interpreter.get("ignore_error", False):
                         return "ERROR: " + error
-                    else:
-                        sys.exit(1)
+                    sys.exit(1)
 
         class JsonAction:
-            def __init__(self, interpreter: dict[str, Any]):
+            def __init__(self, interpreter: dict[str, Any]) -> None:
                 self.interpreter = interpreter
 
             def __call__(self, value: str, current_path: str) -> Value:
@@ -624,14 +628,13 @@ def do_process(used: dict[str, Any], new_vars: dict[str, Any]) -> dict[str, Any]
                     error = (
                         f"When evaluating {key} expression '{value}' in '{current_path}' as JSON: {exception}"
                     )
-                    LOG.error(error)
+                    LOG.exception(error)
                     if interpreter.get("ignore_error", False):
                         return "ERROR: " + error
-                    else:
-                        sys.exit(1)
+                    sys.exit(1)
 
         class YamlAction:
-            def __init__(self, interpreter: dict[str, Any]):
+            def __init__(self, interpreter: dict[str, Any]) -> None:
                 self.interpreter = interpreter
 
             def __call__(self, value: str, current_path: str) -> Value:
@@ -641,11 +644,10 @@ def do_process(used: dict[str, Any], new_vars: dict[str, Any]) -> dict[str, Any]
                     error = (
                         f"When evaluating {key} expression '{value}' in '{current_path}' as YAML: {exception}"
                     )
-                    LOG.error(error)
+                    LOG.exception(error)
                     if self.interpreter.get("ignore_error", False):
                         return "ERROR: " + error
-                    else:
-                        sys.exit(1)
+                    sys.exit(1)
 
         for interpreter in interpreters:
             for var_name in interpreter["vars"]:
@@ -666,7 +668,7 @@ def do_process(used: dict[str, Any], new_vars: dict[str, Any]) -> dict[str, Any]
                 try:
                     transform_path(new_vars, dot_split(var_name), action)
                 except KeyError:  # pragma: nocover
-                    LOG.error("Expression for key not found: %s", var_name)
+                    LOG.exception("Expression for key not found: %s", var_name)
                     sys.exit(1)
 
     class PostprocessAction:
@@ -677,14 +679,13 @@ def do_process(used: dict[str, Any], new_vars: dict[str, Any]) -> dict[str, Any]
             expression = self.postprocess["expression"]  # [:] to clone
             expression = expression.format(repr(value))
             try:
-                return cast(Value, eval(expression, globs))  # nosec # pylint: disable=eval-used # noqa: S307
+                return cast(Value, eval(expression, globs))  # nosec # pylint: disable=eval-used
             except ValueError as exception:  # pragma: nocover
                 error = f"When interpreting the expression '{expression}' in '{current_path}': {exception}"
-                LOG.error(error)
+                LOG.exception(error)
                 if ignore_error:
                     return "ERROR: " + error
-                else:
-                    sys.exit(1)
+                sys.exit(1)
 
     for postprocess in used.get("postprocess", []):
         ignore_error = postprocess.get("ignore_error", False)
