@@ -569,7 +569,7 @@ def do_process(used: dict[str, Any], new_vars: dict[str, Any]) -> dict[str, Any]
                 cmd.append(expression)
                 try:
                     with open(os.devnull, "w", encoding="utf-8") as dev_null:
-                        return subprocess.run(  # nosec
+                        return subprocess.run(  # noqa: S603
                             cmd,
                             stderr=dev_null if self.ignore_error else None,
                             check=True,
@@ -603,14 +603,14 @@ def do_process(used: dict[str, Any], new_vars: dict[str, Any]) -> dict[str, Any]
 
             def __call__(self, expression: str, current_path: str) -> Value:
                 try:
-                    return subprocess.run(  # nosec
+                    return subprocess.run(  # noqa: S602
                         expression,
-                        shell=True,
+                        shell=True,  # noqa: S602,RUF100
                         check=True,
                         stdout=subprocess.PIPE,
                         encoding="utf-8",
                     ).stdout.strip("\n")
-                except (OSError, CalledProcessError) as exception:  # pragma: nocover
+                except (OSError, CalledProcessError) as exception:
                     error = f"When running the expression '{expression}' in [{current_path}]: {exception}"
                     LOG.exception(error)
                     if interpreter.get("ignore_error", False):
