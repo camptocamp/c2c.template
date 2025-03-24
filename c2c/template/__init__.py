@@ -427,7 +427,7 @@ def read_vars(vars_file: str) -> tuple[dict[str, Any], dict[str, Any]]:
     yaml.SafeLoader.add_constructor("!inc", include_tag)
     yaml.SafeLoader.add_constructor("!include", include_tag)
     with open(vars_file, encoding="utf-8") as file_open:
-        used = cast(dict[str, Any], yaml.load(file_open.read(), yaml.SafeLoader))  # nosec
+        used = cast("dict[str, Any]", yaml.load(file_open.read(), yaml.SafeLoader))  # nosec
 
     used.setdefault("environment", [])
     used.setdefault("runtime_environment", [])
@@ -589,7 +589,7 @@ def do_process(used: dict[str, Any], new_vars: dict[str, Any]) -> dict[str, Any]
 
             def __call__(self, expression: str, current_path: str) -> Value:
                 try:
-                    return cast(Value, eval(expression, globs))  # nosec # pylint: disable=eval-used
+                    return cast("Value", eval(expression, globs))  # nosec # pylint: disable=eval-used
                 except Exception:  # pragma: nocover # pylint: disable=broad-except
                     error = f"When evaluating {var_name} expression '{expression}' in '{current_path}' as Python:\n{traceback.format_exc()}"
                     LOG.exception(error)
@@ -623,7 +623,7 @@ def do_process(used: dict[str, Any], new_vars: dict[str, Any]) -> dict[str, Any]
 
             def __call__(self, value: str, current_path: str) -> Value:
                 try:
-                    return cast(dict[str, Any], json.loads(value))
+                    return cast("dict[str, Any]", json.loads(value))
                 except ValueError as exception:  # pragma: nocover
                     error = (
                         f"When evaluating {key} expression '{value}' in '{current_path}' as JSON: {exception}"
@@ -639,7 +639,7 @@ def do_process(used: dict[str, Any], new_vars: dict[str, Any]) -> dict[str, Any]
 
             def __call__(self, value: str, current_path: str) -> Value:
                 try:
-                    return cast(dict[str, Any], yaml.safe_load(value))
+                    return cast("dict[str, Any]", yaml.safe_load(value))
                 except ParserError as exception:  # pragma: nocover
                     error = (
                         f"When evaluating {key} expression '{value}' in '{current_path}' as YAML: {exception}"
@@ -679,7 +679,7 @@ def do_process(used: dict[str, Any], new_vars: dict[str, Any]) -> dict[str, Any]
             expression = self.postprocess["expression"]  # [:] to clone
             expression = expression.format(repr(value))
             try:
-                return cast(Value, eval(expression, globs))  # nosec # pylint: disable=eval-used
+                return cast("Value", eval(expression, globs))  # nosec # pylint: disable=eval-used
             except ValueError as exception:  # pragma: nocover
                 error = f"When interpreting the expression '{expression}' in '{current_path}': {exception}"
                 LOG.exception(error)
