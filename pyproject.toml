@@ -71,6 +71,7 @@ authors = [{name = "Camptocamp",email = "info@camptocamp.com"}]
 packages = [{ include = "c2c/template" }]
 include = ["c2c/template/py.typed"]
 requires-python = ">=3.9"
+dependencies = ["bottle", "Jinja2", "Mako", "PyYAML", "pyyaml-include>=2.0"]
 
 [project.urls]
 repository = "https://github.com/camptocamp/c2c.template"
