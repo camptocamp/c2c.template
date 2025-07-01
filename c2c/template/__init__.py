@@ -392,14 +392,14 @@ def set_path(item: tuple[dict[str, Any], str], value: str) -> None:
 
 def _proceed(files: list[tuple[str, str]], used_vars: dict[str, Any], options: Namespace) -> None:
     if options.engine == "jinja":
-        from bottle import (  # noqa: PLC0415
+        from bottle import (
             jinja2_template as engine,
         )
 
         bottle_template(files, used_vars, engine)
 
     elif options.engine == "mako":
-        from bottle import (  # noqa: PLC0415
+        from bottle import (
             mako_template as engine,
         )
 
