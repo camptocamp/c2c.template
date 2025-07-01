@@ -6,8 +6,8 @@ line-length = 110
 convention = "numpy"
 
 [tool.poetry]
-version = "0.0.0"
 packages = [{ include = "c2c/template" }]
+version = "0.0.0"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
