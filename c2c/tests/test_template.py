@@ -64,14 +64,15 @@ class TestTemplate(TestCase):
         ]
         main()
 
-        assert (
-            open("c2c/tests/jinja").read() == "var1: first, var2: second\n"
-            "var3: first, second, third\n"
-            "var_interpreted: 4\n"
-            "JSON kernel: Linux\n"
-            "YAML kernel: Linux\n"
-            "pi: 3.14"
-        )
+        with open("c2c/tests/jinja") as f:
+            assert (
+                f.read() == "var1: first, var2: second\n"
+                "var3: first, second, third\n"
+                "var_interpreted: 4\n"
+                "JSON kernel: Linux\n"
+                "YAML kernel: Linux\n"
+                "pi: 3.14"
+            )
 
     def test_mako(self):
         from c2c.template import main
@@ -79,10 +80,8 @@ class TestTemplate(TestCase):
         sys.argv = ["", "--engine", "mako", "--vars", "c2c/tests/vars.yaml", "--files", "c2c/tests/mako.mako"]
         main()
 
-        assert (
-            open("c2c/tests/mako").read()
-            == "var1: first, var2: second\nvar3: first, second, third\nvar_interpreted: 4\n"
-        )
+        with open("c2c/tests/mako") as f:
+            assert f.read() == "var1: first, var2: second\nvar3: first, second, third\nvar_interpreted: 4\n"
 
     def test_get_var(self):
         from c2c.template import main
@@ -164,7 +163,7 @@ class TestTemplate(TestCase):
                         "facter_json": {"osfamily": "Debian"},
                         "facter_yaml": {"osfamily": "Debian"},
                         "pi": "3.14",
-                    }
+                    },
                 },
                 "environment": [],
                 "interpreted": {},
@@ -512,7 +511,8 @@ class TestTemplate(TestCase):
         ]
         c2c.template.main()
 
-        assert open("c2c/tests/env.tmpl").read() == "${AA}\n"
+        with open("c2c/tests/env.tmpl") as f:
+            assert f.read() == "${AA}\n"
 
     def test_template_missing_runtime_environment_cache(self):
         import c2c.template
@@ -561,7 +561,8 @@ class TestTemplate(TestCase):
         ]
         c2c.template.main()
 
-        assert open("c2c/tests/env.tmpl").read() == "${AA}\n"
+        with open("c2c/tests/env.tmpl") as f:
+            assert f.read() == "${AA}\n"
 
     def test_include_cache(self):
         import c2c.template
@@ -575,7 +576,8 @@ class TestTemplate(TestCase):
         ]
         c2c.template.main()
 
-        assert json.loads(open("cache.json").read()) == {
-            "used_vars": {"ggg": {"a": {"c": "g"}}, "hhh": [1, 2], "iii": [{"a": {"c": "g"}}]},
-            "config": {"runtime_environment": [], "runtime_interpreted": {}, "runtime_postprocess": []},
-        }
+        with open("cache.json") as f:
+            assert json.loads(f.read()) == {
+                "used_vars": {"ggg": {"a": {"c": "g"}}, "hhh": [1, 2], "iii": [{"a": {"c": "g"}}]},
+                "config": {"runtime_environment": [], "runtime_interpreted": {}, "runtime_postprocess": []},
+            }
