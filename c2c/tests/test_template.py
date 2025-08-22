@@ -164,7 +164,7 @@ class TestTemplate(TestCase):
                         "facter_json": {"osfamily": "Debian"},
                         "facter_yaml": {"osfamily": "Debian"},
                         "pi": "3.14",
-                    }
+                    },
                 },
                 "environment": [],
                 "interpreted": {},
