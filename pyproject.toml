@@ -15,6 +15,7 @@ convention = "numpy"
 "**/tests/**" = ["PT027"]
 "**/test_*.py" = ["PT027"]
 "**/*_test.py" = ["PT027"]
+
 [tool.poetry]
 packages = [{ include = "c2c/template" }]
 version = "0.0.0"
