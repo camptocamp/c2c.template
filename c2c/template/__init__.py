@@ -589,7 +589,7 @@ def do_process(used: dict[str, Any], new_vars: dict[str, Any]) -> dict[str, Any]
 
             def __call__(self, expression: str, current_path: str) -> Value:
                 try:
-                    return cast("Value", eval(expression, globs))  # nosec # pylint: disable=eval-used
+                    return cast("Value", eval(expression, globs))  # nosec # noqa: S307
                 except Exception:  # pragma: nocover # pylint: disable=broad-except
                     error = f"When evaluating {var_name} expression '{expression}' in '{current_path}' as Python:\n{traceback.format_exc()}"
                     LOG.exception(error)
@@ -679,7 +679,7 @@ def do_process(used: dict[str, Any], new_vars: dict[str, Any]) -> dict[str, Any]
             expression = self.postprocess["expression"]  # [:] to clone
             expression = expression.format(repr(value))
             try:
-                return cast("Value", eval(expression, globs))  # nosec # pylint: disable=eval-used
+                return cast("Value", eval(expression, globs))  # nosec # noqa: S307
             except ValueError as exception:  # pragma: nocover
                 error = f"When interpreting the expression '{expression}' in '{current_path}': {exception}"
                 LOG.exception(error)
