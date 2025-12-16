@@ -27,7 +27,7 @@
 
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
 import c2c.template
 
@@ -37,7 +37,7 @@ LOG = logging.getLogger(__name__)
 class _Config:
     """A central point where we can access to the application configuration."""
 
-    _config: Optional[dict[str, Any]] = None
+    _config: dict[str, Any] | None = None
 
     def init(self, configfile: str) -> None:
         self._config = c2c.template.get_config(configfile)
@@ -54,7 +54,7 @@ class _Config:
             return None
         return self._config[key]
 
-    def get_config(self) -> Optional[dict[str, Any]]:
+    def get_config(self) -> dict[str, Any] | None:
         if self._config is None:
             LOG.error("The init method should be called first")
             return None
