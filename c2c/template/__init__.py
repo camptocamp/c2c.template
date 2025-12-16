@@ -37,9 +37,10 @@ import subprocess  # nosec
 import sys
 import traceback
 from argparse import ArgumentParser, Namespace
+from collections.abc import Callable
 from string import Formatter
 from subprocess import CalledProcessError  # nosec
-from typing import Any, Callable, Optional, Protocol, Union, cast
+from typing import Any, Optional, Protocol, Union, cast
 
 import yaml
 import yaml_include
@@ -62,7 +63,7 @@ def transform_path(
     value: dict[str, Any],
     path: list[str],
     action: Callable[[str, str], Value],
-    current_path: Optional[str] = "",
+    current_path: str | None = "",
 ) -> None:
     assert len(path) > 0  # nosec
     key = path[0]
@@ -164,8 +165,8 @@ class FormatWalker:
         used_vars: dict[str, Any],
         no_interpreted: list[str],
         environment: list[dict[str, Any]],
-        runtime_environment: Optional[list[dict[str, Any]]] = None,
-        runtime_environment_pattern: Optional[str] = None,
+        runtime_environment: list[dict[str, Any]] | None = None,
+        runtime_environment_pattern: str | None = None,
     ) -> None:
         """Initialize the walker."""
         self.formatted: list[str] = []
@@ -196,8 +197,8 @@ class FormatWalker:
     def format_walker(
         self,
         current_vars: dict[str, Any],
-        path: Optional[str] = None,
-        path_list: Optional[list[str]] = None,
+        path: str | None = None,
+        path_list: list[str] | None = None,
     ) -> tuple[dict[str, Any], list[tuple[str, str]]]:
         if isinstance(current_vars, str):
             if path not in self.formatted:
@@ -249,7 +250,7 @@ class FormatWalker:
         return current_vars, []
 
     def __call__(self) -> None:
-        skip: Optional[list[tuple[str, str]]] = None
+        skip: list[tuple[str, str]] | None = None
         old_skip = sys.maxsize
         while skip is None or (old_skip != len(skip) and len(skip) != 0):
             old_skip = sys.maxsize if skip is None else len(skip)
@@ -376,7 +377,7 @@ def do(options: Namespace) -> None:  # pylint: disable=invalid-name
         _proceed(files, used_vars, options)
 
 
-def get_path(value: dict[str, Any], path: str) -> tuple[tuple[Optional[dict[str, Any]], str], dict[str, Any]]:
+def get_path(value: dict[str, Any], path: str) -> tuple[tuple[dict[str, Any] | None, str], dict[str, Any]]:
     split_path = dot_split(path)
     parent = None
     for element in split_path:
@@ -702,7 +703,7 @@ def update_vars(
     current_vars: dict[str, Any],
     new_vars: dict[str, Any],
     update_paths: set[str],
-    path: Optional[str] = None,
+    path: str | None = None,
 ) -> None:
     for key, value in new_vars.items():
         if "." in key:  # pragma: nocover
