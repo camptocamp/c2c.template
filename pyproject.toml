@@ -32,7 +32,7 @@ pyyaml-include = "2.2"
 prospector = { version = "1.17.3", extras = ["with_bandit", "with_mypy", "with_pyroma", "with_ruff"] }
 prospector-profile-duplicated = "1.10.5"
 prospector-profile-utils = "1.26.5"
-pytest = "8.4.2"
+pytest = "9.0.2"
 types-PyYAML = "6.0.12.20250915"
 
 [tool.poetry-dynamic-versioning]
