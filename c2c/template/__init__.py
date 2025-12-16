@@ -40,13 +40,13 @@ from argparse import ArgumentParser, Namespace
 from collections.abc import Callable
 from string import Formatter
 from subprocess import CalledProcessError  # nosec
-from typing import Any, Optional, Protocol, Union, cast
+from typing import Any, Protocol, cast
 
 import yaml
 import yaml_include
 from yaml.parser import ParserError
 
-Value = Union[str, int, float, dict[str, Any], list[Any]]
+Value = str | int | float | dict[str, Any] | list[Any]
 
 LOG = logging.getLogger(__name__)
 DOT_SPLITTER_RE = re.compile(r"(?<!\\)\.")
