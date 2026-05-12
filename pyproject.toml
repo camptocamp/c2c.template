@@ -1,3 +1,43 @@
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
+build-backend = "poetry.core.masonry.api"
+
+[project]
+classifiers = [
+    'Environment :: Console',
+    'Framework :: Bottle',
+    'Intended Audience :: Developers',
+    'License :: OSI Approved :: BSD License',
+    'Operating System :: OS Independent',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
+    'Topic :: Utilities',
+    'Typing :: Typed',
+]
+dynamic = ["dependencies", "version"]
+name = "c2c.template"
+description = "Vars collector and template runner."
+readme = "README.rst"
+keywords = ["template"]
+license = "BSD-2-Clause"
+authors = [{name = "Camptocamp",email = "info@camptocamp.com"}]
+packages = [{ include = "c2c/template" }]
+include = ["c2c/template/py.typed"]
+requires-python = ">=3.10"
+dependencies = ["bottle", "Jinja2", "Mako", "PyYAML", "pyyaml-include>=2.0"]
+
+[project.urls]
+repository = "https://github.com/camptocamp/c2c.template"
+"Bug Tracker" = "https://github.com/camptocamp/c2c.template/issues"
+
+[project.scripts]
+c2c-template = "c2c.template:main"
+
 [tool.ruff]
 target-version = "py310"
 line-length = 110
@@ -54,42 +94,3 @@ format-jinja = """
 [tool.poetry-plugin-tweak-dependencies-version]
 default = "present"
 pyyaml-include = ">=2.0"
-
-[project]
-classifiers = [
-    'Environment :: Console',
-    'Framework :: Bottle',
-    'Intended Audience :: Developers',
-    'License :: OSI Approved :: BSD License',
-    'Operating System :: OS Independent',
-    'Programming Language :: Python',
-    'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.10',
-    'Programming Language :: Python :: 3.11',
-    'Programming Language :: Python :: 3.12',
-    'Programming Language :: Python :: 3.13',
-    'Topic :: Utilities',
-    'Typing :: Typed',
-]
-dynamic = ["dependencies", "version"]
-name = "c2c.template"
-description = "Vars collector and template runner."
-readme = "README.rst"
-keywords = ["template"]
-license = "BSD-2-Clause"
-authors = [{name = "Camptocamp",email = "info@camptocamp.com"}]
-packages = [{ include = "c2c/template" }]
-include = ["c2c/template/py.typed"]
-requires-python = ">=3.10"
-dependencies = ["bottle", "Jinja2", "Mako", "PyYAML", "pyyaml-include>=2.0"]
-
-[project.urls]
-repository = "https://github.com/camptocamp/c2c.template"
-"Bug Tracker" = "https://github.com/camptocamp/c2c.template/issues"
-
-[project.scripts]
-c2c-template = "c2c.template:main"
-
-[build-system]
-requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
-build-backend = "poetry.core.masonry.api"
