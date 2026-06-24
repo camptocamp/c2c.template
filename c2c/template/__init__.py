@@ -438,6 +438,7 @@ def read_vars(vars_file: str) -> tuple[dict[str, Any], dict[str, Any]]:
     current_vars: dict[str, Any] = {}
     if "extends" in used:
         current_vars, config = read_vars(used["extends"])
+        current_vars = copy.deepcopy(current_vars)
 
         no_interpreted = set()
         no_interpreted.update(config.get("no_interpreted", []))

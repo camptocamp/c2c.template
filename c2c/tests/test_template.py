@@ -564,6 +564,18 @@ class TestTemplate(TestCase):
         with open("c2c/tests/env.tmpl") as f:
             assert f.read() == "${AA}\n"
 
+    def test_yaml_alias_isolation(self):
+        from c2c.template import main
+
+        sys.argv = ["", "--vars", "c2c/tests/alias_project.yaml", "--get-config", "config7.yaml", "interfaces"]
+        main()
+
+        with open("config7.yaml") as config:
+            interfaces = yaml.safe_load(config.read())["vars"]["interfaces"]
+        assert interfaces["section_b"]["options"]["map"] == {"key": "value"}
+        assert interfaces["section_a"]["options"]["map"] == {}
+        assert interfaces["section_c"]["options"]["map"] == {}
+
     def test_include_cache(self):
         import c2c.template
 
