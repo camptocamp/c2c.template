@@ -567,7 +567,14 @@ class TestTemplate(TestCase):
     def test_yaml_alias_isolation(self):
         from c2c.template import main
 
-        sys.argv = ["", "--vars", "c2c/tests/alias_project.yaml", "--get-config", "config7.yaml", "interfaces"]
+        sys.argv = [
+            "",
+            "--vars",
+            "c2c/tests/alias_project.yaml",
+            "--get-config",
+            "config7.yaml",
+            "interfaces",
+        ]
         main()
 
         with open("config7.yaml") as config:
