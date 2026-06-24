@@ -1,0 +1,9 @@
+vars:
+  interfaces:
+    section_a:
+      options: &options
+        map: {}
+    section_b:
+      options: *options
+    section_c:
+      options: *options

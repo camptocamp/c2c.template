@@ -1,0 +1,17 @@
+extends: c2c/tests/alias_const.yaml
+
+update_paths:
+  - interfaces.section_b.options.map
+
+vars:
+  interfaces:
+    section_a:
+      options: &options
+        map: {}
+    section_b:
+      options:
+        <<: *options
+        map:
+          key: value
+    section_c:
+      options: *options
