@@ -91,5 +91,5 @@ repository = "https://github.com/camptocamp/c2c.template"
 c2c-template = "c2c.template:main"
 
 [build-system]
-requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
+requires = ["poetry-core==2.4.0", "poetry-dynamic-versioning==1.10.0"]
 build-backend = "poetry.core.masonry.api"
