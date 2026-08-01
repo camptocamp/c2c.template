@@ -33,7 +33,7 @@ prospector = { version = "1.19.0", extras = ["with_bandit", "with_mypy", "with_p
 prospector-profile-duplicated = "1.12.0"
 prospector-profile-utils = "1.27.0"
 pytest = "9.1.1"
-types-PyYAML = "6.0.12.20260518"
+types-PyYAML = "6.0.12.20260724"
 
 [tool.poetry-dynamic-versioning]
 enable = true
@@ -91,5 +91,5 @@ repository = "https://github.com/camptocamp/c2c.template"
 c2c-template = "c2c.template:main"
 
 [build-system]
-requires = ["poetry-core==2.4.0", "poetry-dynamic-versioning==1.10.0"]
+requires = ["poetry-core==2.4.1", "poetry-dynamic-versioning==1.10.0"]
 build-backend = "poetry.core.masonry.api"
