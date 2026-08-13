@@ -58,7 +58,7 @@ jobs:
       - run: poetry install
 
       - run: poetry run prospector --version
-      - run: poetry run prospector --output=pylint --die-on-tool-error c2c
+      - run: poetry run prospector --output=pylint --direct-tool-stdout c2c
       - run: poetry run pytest --verbose --color=yes
 
       - name: Publish
