@@ -24,7 +24,7 @@ version = "0.0.0"
 python = ">=3.10,<4.0"
 bottle = "0.13.4"
 Jinja2 = "3.1.6"
-Mako = "1.3.12"
+Mako = "1.4.1"
 PyYAML = "6.0.3"
 pyyaml-include = "2.2"
 
@@ -33,7 +33,7 @@ prospector = { version = "1.19.1", extras = ["with_bandit", "with_mypy", "with_p
 prospector-profile-duplicated = "1.12.0"
 prospector-profile-utils = "1.27.0"
 pytest = "9.1.1"
-types-PyYAML = "6.0.12.20260724"
+types-PyYAML = "6.0.12.20260815"
 ruff = "0.16.4"
 pylint = "4.0.7"
 
@@ -93,5 +93,5 @@ repository = "https://github.com/camptocamp/c2c.template"
 c2c-template = "c2c.template:main"
 
 [build-system]
-requires = ["poetry-core==2.4.0", "poetry-dynamic-versioning[plugin]==1.10.0"]
+requires = ["poetry-core==2.4.1", "poetry-dynamic-versioning[plugin]==1.10.0"]
 build-backend = "poetry.core.masonry.api"
