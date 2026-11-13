@@ -83,6 +83,47 @@ class TestTemplate(TestCase):
         with open("c2c/tests/mako") as f:
             assert f.read() == "var1: first, var2: second\nvar3: first, second, third\nvar_interpreted: 4\n"
 
+    def test_mako_absolute_path(self):
+        from c2c.template import main
+
+        sys.argv = [
+            "",
+            "--engine",
+            "mako",
+            "--vars",
+            os.path.abspath("c2c/tests/vars.yaml"),
+            "--files",
+            os.path.abspath("c2c/tests/mako.mako"),
+        ]
+        main()
+
+        with open("c2c/tests/mako") as f:
+            assert f.read() == "var1: first, var2: second\nvar3: first, second, third\nvar_interpreted: 4\n"
+
+    def test_jinja_absolute_path(self):
+        from c2c.template import main
+
+        sys.argv = [
+            "",
+            "--engine",
+            "jinja",
+            "--vars",
+            os.path.abspath("c2c/tests/vars.yaml"),
+            "--files",
+            os.path.abspath("c2c/tests/jinja.jinja"),
+        ]
+        main()
+
+        with open("c2c/tests/jinja") as f:
+            assert (
+                f.read() == "var1: first, var2: second\n"
+                "var3: first, second, third\n"
+                "var_interpreted: 4\n"
+                "JSON kernel: Linux\n"
+                "YAML kernel: Linux\n"
+                "pi: 3.14"
+            )
+
     def test_get_var(self):
         from c2c.template import main
 

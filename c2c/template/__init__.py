@@ -413,7 +413,13 @@ class Engine(Protocol):
 
 def bottle_template(files: list[tuple[str, str]], used_vars: dict[str, Any], engine: Engine) -> None:
     for template, destination in files:
-        processed = engine(template, **used_vars)
+        # Bottle >= 0.13 raises a DeprecationWarning for absolute template names, the name has
+        # to be relative to the lookup directory
+        processed = engine(
+            os.path.basename(template),
+            template_lookup=[os.path.dirname(template) or "."],
+            **used_vars,
+        )
         save(template, destination, processed)
 
 
