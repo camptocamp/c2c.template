@@ -1,0 +1,1 @@
+Fixed the `DeprecationWarning` raised as an error by bottle 0.13 when `c2c-template --engine mako|jinja --files` is given absolute template paths, by passing the template name relative to its directory to the bottle lookup.
