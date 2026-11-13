@@ -1,0 +1,1 @@
+Fixed the PyPI publishing that uploaded a version `0.0.0` wheel instead of the version of the tag, by restoring `poetry-core` in the build requirements so the package is built with the Poetry CLI, which loads the `poetry-dynamic-versioning` plugin.
